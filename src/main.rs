@@ -74,7 +74,7 @@ fn check_dir(
     directory_patterns: &[Pattern],
     file_patterns: &[Pattern],
     dir: &Path,
-) -> anyhow::Result<bool> {
+) -> std::io::Result<bool> {
     let entries = dir.read_dir()?.filter_map(Result::ok).collect::<Vec<_>>();
     let dirs = entries
         .iter()
