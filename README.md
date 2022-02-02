@@ -74,3 +74,33 @@ Feel free to add your own example via Pull Request!
 
 Please keep `git` and `cargo` as the first examples.
 After that all examples are alphabetically sorted.
+
+## Tips
+
+### Test everything
+
+Test your setup first with a simple command like `pwd`.
+When building a command including rm for example it's wise to test it before running it.
+
+### Use `nice`
+
+Builds on a smaller machine with not as much computing power are annoying to run in the background.
+`nice` helps.
+You can include it in your alias and all the commands will run via `nice`:
+
+```diff
+-alias cargoBelow='project-below --file=Cargo.toml --prune      cargo'
++alias cargoBelow='project-below --file=Cargo.toml --prune nice cargo'
+```
+
+### PAGER
+
+Some tools use a pager like `git` uses `less` for some commands.
+This tool sets the environment variable `PAGER` to `cat` in order to work around this.
+If you have set `GIT_PAGER` or another tool specific pager this will not help here.
+For example include it into your alias:
+
+```diff
+-alias gitBelow='              project-below --directory=.git git'
++alias gitBelow='GIT_PAGER=cat project-below --directory=.git git'
+```
