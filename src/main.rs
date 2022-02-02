@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use glob::Pattern;
@@ -47,8 +47,18 @@ fn main() {
             },
         );
 
+    let mut already_used: Vec<PathBuf> = Vec::new();
+
     for dir in walk {
         let path = dir.path();
+
+        if matches.is_present("prune") && is_parent_directory_already_checked(&already_used, path) {
+            // TODO: it would be better to include something like this in `filter_entry`.
+            // But this requires Send so Arc & Mutex are probably required.
+            continue;
+        }
+        already_used.push(path.to_path_buf());
+
         println!("{}", path.display());
         // TODO: maybe check path.exists()
 
@@ -92,4 +102,15 @@ fn generate_command(command: &[&str], working_dir: &Path) -> Command {
     let mut c = Command::new(program);
     c.args(command).current_dir(working_dir).env("PAGER", "cat");
     c
+}
+
+fn is_parent_directory_already_checked(checked: &[PathBuf], path: &Path) -> bool {
+    let mut p = path;
+    while let Some(parent) = p.parent() {
+        if checked.contains(&parent.to_path_buf()) {
+            return true;
+        }
+        p = parent;
+    }
+    false
 }

@@ -44,7 +44,7 @@ gitBelow status --short --branch
 ### [cargo](https://doc.rust-lang.org/cargo/)
 
 ```bash
-alias cargoBelow='project-below --file=Cargo.toml cargo'
+alias cargoBelow='project-below --file=Cargo.toml --prune cargo'
 cargoBelow check
 ```
 
