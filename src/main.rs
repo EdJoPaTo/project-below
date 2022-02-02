@@ -1,3 +1,4 @@
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -19,7 +20,7 @@ fn main() {
         .unwrap_or_default()
         .map(|s| Pattern::new(s).unwrap())
         .collect::<Vec<_>>();
-    let command = matches.values_of("command").unwrap().collect::<Vec<_>>();
+    let command = matches.values_of_os("command").unwrap().collect::<Vec<_>>();
 
     let walk = WalkBuilder::new(".")
         .filter_entry(move |d| d.path().is_dir())
@@ -96,8 +97,12 @@ fn check_dir(
     Ok(dirs_match && files_match)
 }
 
-fn generate_command(command: &[&str], working_dir: &Path) -> Command {
-    let mut command = command.iter();
+fn generate_command<C, S>(command: C, working_dir: &Path) -> Command
+where
+    C: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+{
+    let mut command = command.into_iter();
     let program = command.next().unwrap();
     let mut c = Command::new(program);
     c.args(command).current_dir(working_dir).env("PAGER", "cat");

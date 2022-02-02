@@ -39,6 +39,7 @@ pub fn build() -> App<'static> {
             Arg::new("command")
                 .value_name("COMMAND")
                 .value_hint(ValueHint::CommandWithArguments)
+                .allow_invalid_utf8(true)
                 .multiple_values(true)
                 .required(true)
                 .help("Command to be executed in each folder"),
