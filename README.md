@@ -48,6 +48,7 @@ gitBelow fetch
 ```bash
 alias cargoBelow='project-below --file=Cargo.toml cargo'
 cargoBelow check
+cargoBelow clean
 ```
 
 ### [Docker](https://www.docker.com/) / [Podman](https://podman.io/)
@@ -58,6 +59,15 @@ dockerBelow build .
 
 alias podmanBelow='project-below --file=Dockerfile podman'
 podmanBelow build .
+```
+
+### [dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/)
+
+```bash
+alias dotnetBelow='project-below --file="*.sln" dotnet'
+dotnetBelow test
+dotnetBelow build
+dotnetBelow clean
 ```
 
 ### [NPM](https://www.npmjs.com/)
