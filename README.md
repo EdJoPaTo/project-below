@@ -15,11 +15,10 @@ gitBelow() {
 gitBelow fetch
 ```
 
-Sadly this lacks autocompletion of `git` commands.
-`gitBelow stat<Tab>` does not autocomplete to `gitBelow status`.
+Sadly this approach lacks autocompletion of `git` commands: `gitBelow stat<Tab>` does not autocomplete to `gitBelow status`.
 But this is only an annoyance.
 
-For commands like `npm` this is not even simple to come up with a useful solution for this.
+For commands like `npm` it's not even simple to come up with a useful solution.
 `find` does not use ignore files and ends up with all the `package.json` files in the `node_modules` folder (which is often a lot).
 `fd` on the other hand uses ignore files but `--exec` is always executed from the working directory from where the command was started.
 `git` for example has `-C` to use another path, but tools like `npm` do not.
@@ -27,7 +26,9 @@ This requires some workarounds like spawning a `bash` with a `cd` command at fir
 It works but there won't be auto-completion of commands either.
 Also, it creates a lot of bash / alias dark magic my future me wants to understand or simply adapt to other dependency managers.
 
-In turn, I created this small tool which helps me to do exactly what I need in a simple way.
+In turn, I created this tool which helps me to do exactly what I need in a simple way.
+
+As this tool uses the same directory walker like [`fd`](https://github.com/sharkdp/fd) or [`rg`](https://github.com/BurntSushi/ripgrep) it's way faster than `find` can ever be and uses smart features like ignore files, it skips hidden folders, …
 
 ## Examples
 
@@ -39,6 +40,7 @@ Show all `git status` in git projects blow the current directory:
 alias gitBelow='project-below --directory=.git git'
 gitBelow status
 gitBelow status --short --branch
+gitBelow fetch
 ```
 
 ### [cargo](https://doc.rust-lang.org/cargo/)
