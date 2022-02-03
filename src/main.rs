@@ -21,7 +21,7 @@ fn main() {
         .unwrap_or_default()
         .map(|s| Pattern::new(s).unwrap())
         .collect::<Vec<_>>();
-    let prune = matches.is_present("prune");
+    let recursive = matches.is_present("recursive");
     let command = matches.values_of_os("command").unwrap().collect::<Vec<_>>();
 
     let already_used: Arc<Mutex<Vec<PathBuf>>> = Arc::new(Mutex::new(Vec::new()));
@@ -34,7 +34,10 @@ fn main() {
                 if !path.is_dir() {
                     return false;
                 }
-                if prune && is_parent_already_checked(&already_used.lock().unwrap(), path) {
+                if recursive {
+                    return true;
+                }
+                if is_parent_already_checked(&already_used.lock().unwrap(), path) {
                     return false;
                 }
                 true
@@ -66,9 +69,9 @@ fn main() {
 
     for dir in walk {
         let path = dir.path();
-        if prune {
+        {
             let mut already_used = already_used.lock().unwrap();
-            if is_parent_already_checked(&already_used, path) {
+            if !recursive && is_parent_already_checked(&already_used, path) {
                 // Should never happen with synchronous walker but maybe a parallel one is introduced in the future
                 continue;
             }

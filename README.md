@@ -44,7 +44,7 @@ gitBelow status --short --branch
 ### [cargo](https://doc.rust-lang.org/cargo/)
 
 ```bash
-alias cargoBelow='project-below --file=Cargo.toml --prune cargo'
+alias cargoBelow='project-below --file=Cargo.toml cargo'
 cargoBelow check
 ```
 
@@ -89,8 +89,8 @@ Builds on a smaller machine with not as much computing power are annoying to run
 You can include it in your alias and all the commands will run via `nice`:
 
 ```diff
--alias cargoBelow='project-below --file=Cargo.toml --prune      cargo'
-+alias cargoBelow='project-below --file=Cargo.toml --prune nice cargo'
+-alias cargoBelow='project-below --file=Cargo.toml      cargo'
++alias cargoBelow='project-below --file=Cargo.toml nice cargo'
 ```
 
 ### PAGER

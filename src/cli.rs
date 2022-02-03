@@ -30,10 +30,10 @@ pub fn build() -> App<'static> {
                 .help("The project folder must contain a file matching this glob pattern"),
         )
         .arg(
-            Arg::new("prune")
-                .long("prune")
-                .help("Do not traverse into directories that are already matched")
-                .long_help("Do not traverse into directories that are already matched. This can be helpful for monorepos which include the config file in the main folder and each subfolder like Cargo does."),
+            Arg::new("recursive")
+                .long("recursive")
+                .help("Traverse into projects that already matched")
+                .long_help("Traverse into projects that already matched. This can be helpful for monorepos which include the config file in the main folder and each subfolder."),
         )
         .arg(
             Arg::new("command")
