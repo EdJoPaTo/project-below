@@ -2,6 +2,7 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 use glob::Pattern;
 use ignore::WalkBuilder;
@@ -81,10 +82,12 @@ fn main() {
         println!("{}", path.display());
         // TODO: maybe check path.exists()
 
+        let start = Instant::now();
         let status = generate_command(&command, path)
             .status()
             .expect("failed to execute process");
-        println!("{}", status);
+        let took = start.elapsed();
+        println!("took {}  {}\n", format_duration(took), status);
     }
 }
 
@@ -130,4 +133,34 @@ where
 fn is_parent_already_checked(already_used: &[PathBuf], path: &Path) -> bool {
     path.ancestors()
         .any(|p| already_used.contains(&p.to_path_buf()))
+}
+
+fn format_duration(duration: Duration) -> String {
+    let seconds = duration.as_secs() % 60;
+    let minutes = (duration.as_secs() / 60) % 60;
+    let hours = duration.as_secs() / (60 * 60);
+    let mut result = String::new();
+
+    if hours > 0 {
+        result += &format!("{:>3}h", hours);
+    } else {
+        result += "    ";
+    }
+
+    if minutes > 0 {
+        result += &format!("{:>2}m", minutes);
+    } else {
+        result += "   ";
+    }
+
+    if seconds > 0 {
+        result += &format!("{:>2}s", seconds);
+    } else {
+        result += "   ";
+    }
+
+    if hours == 0 && minutes == 0 {
+        result += &format!("{:>3}ms", duration.subsec_millis());
+    }
+    result
 }
