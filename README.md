@@ -50,6 +50,16 @@ alias cargoBelow='project-below --file=Cargo.toml cargo'
 cargoBelow check
 ```
 
+### [Docker](https://www.docker.com/) / [Podman](https://podman.io/)
+
+```bash
+alias dockerBelow='project-below --file=Dockerfile docker'
+dockerBelow build .
+
+alias podmanBelow='project-below --file=Dockerfile podman'
+podmanBelow build .
+```
+
 ### [NPM](https://www.npmjs.com/)
 
 ```bash
@@ -68,6 +78,13 @@ pioBelow test
 
 alias pioBelow-clean='project-below --file=platformio.ini --directory=.pio rm -rf .pio'
 pioBelow-clean
+```
+
+### [website-stalker](https://github.com/EdJoPaTo/website-stalker)
+
+```bash
+alias website-stalker-below='project-below --file=website-stalker.yaml website-stalker'
+website-stalker-below run --all
 ```
 
 ### Add your own example
