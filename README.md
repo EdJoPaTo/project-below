@@ -70,6 +70,13 @@ alias npmBelow-clean='project-below --file=package.json --directory=node_modules
 npmBelow-clean
 ```
 
+### [PKGBUILD](https://wiki.archlinux.org/title/PKGBUILD)
+
+```bash
+alias makepkgBelow='project-below --file=PKGBUILD makepkg'
+makepkgBelow -f
+```
+
 ### [PlatformIO](https://platformio.org/)
 
 ```bash
