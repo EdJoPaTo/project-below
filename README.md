@@ -84,6 +84,11 @@ After that all examples are alphabetically sorted.
 Test your setup first with a simple command like `pwd`.
 When building a command including rm for example it's wise to test it before running it.
 
+```diff
+-alias cargoBelow='project-below --file=Cargo.toml rm -rf target'
++alias cargoBelow='project-below --file=Cargo.toml pwd'
+```
+
 ### Use `nice`
 
 Builds on a smaller machine with not as much computing power are annoying to run in the background.
