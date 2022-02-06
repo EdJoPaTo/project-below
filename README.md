@@ -2,39 +2,58 @@
 
 > Quickly run commands in many projects below the current directory
 
-As I have many projects I often do the same tasks in multiple projects (like `git fetch` or `git status --short --branch`).
+As I have many projects I often do the same tasks in multiple projects (like `git fetch`).
 
-For some use cases this works fine with `find` or [`fd`](https://github.com/sharkdp/fd), but gets annoying for some package managers.
-`gitBelow` for example can be realized like this:
+Doing something like this is tedious:
 
 ```bash
-gitBelow() {
-  find . -name ".git" -type d -print -execdir git --no-pager $@ \;
-}
+ls
+cd first
+git fetch
+cd ..
+cd second
+git fetch
+cd ..
+…
+```
 
+And can be done with this tool in a much simpler way:
+
+```bash
 gitBelow fetch
 ```
 
-Sadly this approach lacks autocompletion of `git` commands: `gitBelow stat<Tab>` does not autocomplete to `gitBelow status`.
-But this is only an annoyance.
+## Basic Idea
 
-For commands like `npm` it's not even simple to come up with a useful solution.
-`find` does not use ignore files and ends up with all the `package.json` files in the `node_modules` folder (which is often a lot).
-`fd` on the other hand uses ignore files but `--exec` is always executed from the working directory from where the command was started.
-`git` for example has `-C` to use another path, but tools like `npm` do not.
-This requires some workarounds like spawning a `bash` with a `cd` command at first.
-It works but there won't be auto-completion of commands either.
-Also, it creates a lot of bash / alias dark magic my future me wants to understand or simply adapt to other dependency managers.
+This tool is always used in the following way.
+With the `[OPTIONS]` the subfolders are filtered.
+Then in every matching folder the command is executed.
+Check `--help` for all the filters.
 
-In turn, I created this tool which helps me to do exactly what I need in a simple way.
+```bash
+project-below [OPTIONS] <COMMAND>...
+```
 
-As this tool uses the same directory walker like [`fd`](https://github.com/sharkdp/fd) or [`rg`](https://github.com/BurntSushi/ripgrep) it's way faster than `find` can ever be and uses smart features like ignore files, it skips hidden folders, …
+For example lets run `git status` in every subfolder which contains a `package.json` (probably some Node.js project):
+
+```bash
+project-below --file=package.json git status
+```
+
+This can be simplified with aliases like it is done in the examples.
+The first part (executable and options) always stays the same for this kind of query, only the command (or its arguments) changes.
+You can put the first part in an alias and use the alias then:
+
+```bash
+alias npmBelow='project-below --file=package.json'
+npmBelow git status
+```
 
 ## Examples
 
 ### [git](https://git-scm.com/)
 
-Show all `git status` in git projects blow the current directory:
+Run `git status` or `git fetch` in all git projects below the current directory:
 
 ```bash
 alias gitBelow='project-below --directory=.git git'
@@ -136,8 +155,9 @@ You can include it in your alias and all the commands will run via `nice`:
 
 ### PAGER
 
-Some tools use a pager like `git` uses `less` for some commands.
-This tool sets the environment variable `PAGER` to `cat` in order to work around this.
+Some tools use a pager.
+For example `git` uses `less` for some commands.
+`project-below` sets the environment variable `PAGER` to `cat` in order to work around this.
 If you have set `GIT_PAGER` or another tool specific pager this will not help here.
 For example include it into your alias:
 
@@ -145,3 +165,32 @@ For example include it into your alias:
 -alias gitBelow='              project-below --directory=.git git'
 +alias gitBelow='GIT_PAGER=cat project-below --directory=.git git'
 ```
+
+## How did I end up creating this project?
+
+For some use cases this problem can be solved with `find` or [`fd`](https://github.com/sharkdp/fd), but gets annoying for some package managers.
+`gitBelow` for example can be realized like this:
+
+```bash
+gitBelow() {
+  find . -name ".git" -type d -print -execdir git --no-pager $@ \;
+}
+
+gitBelow fetch
+```
+
+Sadly this approach lacks autocompletion of `git` commands: `gitBelow stat<Tab>` does not autocomplete to `gitBelow status`.
+But this is only an annoyance.
+
+For commands like `npm` it's not even simple to come up with a useful solution.
+`find` does not use ignore files and ends up with all the `package.json` files in the `node_modules` folder (which is often a lot).
+`fd` on the other hand uses ignore files but `--exec` is always executed from the working directory from where the command was started.
+`git` for example has `-C` to use another path, but tools like `npm` do not.
+This requires some workarounds like spawning a `bash` with a `cd` command at first.
+It works but there won't be auto-completion of commands either.
+Also, it creates a lot of bash / alias dark magic my future me wants to understand.
+It is also way harder to adapt to new use cases or other dependency managers.
+
+In turn, I created this tool which helps me to do exactly what I need in a simple way.
+
+As this tool uses the same directory walker like [`fd`](https://github.com/sharkdp/fd) or [`rg`](https://github.com/BurntSushi/ripgrep) it's way faster than `find` can ever be and uses smart features like ignore files, it skips hidden folders and so on.
