@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `--list` shows a list of all the matching directories instead of running a command.
+- Check deep globs like `src/*.ts`.
 
 ## [0.1.0] - 2022-02-03
 

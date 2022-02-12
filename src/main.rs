@@ -4,24 +4,34 @@ use std::process::Command;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use glob::Pattern;
 use ignore::WalkBuilder;
 
+use crate::check_dir_is_project::{check_dir_is_project, Pattern};
+
+mod check_dir_is_project;
 mod cli;
 
 fn main() {
     let matches = cli::build().get_matches();
 
-    let directory_patterns = matches
-        .values_of("directory")
-        .unwrap_or_default()
-        .map(|s| Pattern::new(s).unwrap())
-        .collect::<Vec<_>>();
-    let file_patterns = matches
-        .values_of("file")
-        .unwrap_or_default()
-        .map(|s| Pattern::new(s).unwrap())
-        .collect::<Vec<_>>();
+    let pattern = {
+        let mut pattern = Vec::new();
+        pattern.append(
+            &mut matches
+                .values_of("directory")
+                .unwrap_or_default()
+                .map(Pattern::new_directory)
+                .collect::<Vec<_>>(),
+        );
+        pattern.append(
+            &mut matches
+                .values_of("file")
+                .unwrap_or_default()
+                .map(Pattern::new_file)
+                .collect::<Vec<_>>(),
+        );
+        pattern
+    };
     let recursive = matches.is_present("recursive");
     let command = matches
         .values_of_os("command")
@@ -58,16 +68,7 @@ fn main() {
                     None
                 }
             })
-            .filter(
-                |d| match check_dir(&directory_patterns, &file_patterns, d.path()) {
-                    Ok(true) => true,
-                    Ok(false) => false,
-                    Err(err) => {
-                        eprintln!("Couldn't check directory {}: {}", d.path().display(), err);
-                        false
-                    }
-                },
-            )
+            .filter(|d| check_dir_is_project(&pattern, d.path()))
     };
 
     for dir in walk {
@@ -93,33 +94,6 @@ fn main() {
             println!("took {}  {}\n", format_duration(took), status);
         }
     }
-}
-
-fn check_dir(
-    directory_patterns: &[Pattern],
-    file_patterns: &[Pattern],
-    dir: &Path,
-) -> std::io::Result<bool> {
-    let entries = dir.read_dir()?.filter_map(Result::ok).collect::<Vec<_>>();
-    let dirs = entries
-        .iter()
-        .filter(|d| d.path().is_dir())
-        .filter_map(|s| s.file_name().to_str().map(std::string::ToString::to_string))
-        .collect::<Vec<_>>();
-    let files = entries
-        .iter()
-        .filter(|d| d.path().is_file())
-        .filter_map(|s| s.file_name().to_str().map(std::string::ToString::to_string))
-        .collect::<Vec<_>>();
-
-    let dirs_match = directory_patterns
-        .iter()
-        .all(|p| dirs.iter().any(|d| p.matches(d)));
-    let files_match = file_patterns
-        .iter()
-        .all(|p| files.iter().any(|f| p.matches(f)));
-
-    Ok(dirs_match && files_match)
 }
 
 fn generate_command<C, S>(command: C, working_dir: &Path) -> Command
