@@ -23,7 +23,9 @@ fn main() {
         .map(|s| Pattern::new(s).unwrap())
         .collect::<Vec<_>>();
     let recursive = matches.is_present("recursive");
-    let command = matches.values_of_os("command").unwrap().collect::<Vec<_>>();
+    let command = matches
+        .values_of_os("command")
+        .map(std::iter::Iterator::collect::<Vec<_>>);
 
     let already_used: Arc<Mutex<Vec<PathBuf>>> = Arc::new(Mutex::new(Vec::new()));
 
@@ -82,12 +84,14 @@ fn main() {
         println!("{}", path.display());
         // TODO: maybe check path.exists()
 
-        let start = Instant::now();
-        let status = generate_command(&command, path)
-            .status()
-            .expect("failed to execute process");
-        let took = start.elapsed();
-        println!("took {}  {}\n", format_duration(took), status);
+        if let Some(command) = &command {
+            let start = Instant::now();
+            let status = generate_command(command, path)
+                .status()
+                .expect("failed to execute process");
+            let took = start.elapsed();
+            println!("took {}  {}\n", format_duration(took), status);
+        }
     }
 }
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `--list` shows a list of all the matching directories instead of running a command.
+
 ## [0.1.0] - 2022-02-03
 
 Initial release

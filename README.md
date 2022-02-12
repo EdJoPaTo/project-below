@@ -134,12 +134,27 @@ After that all examples are alphabetically sorted.
 
 ### Test everything
 
-Test your setup first with a simple command like `pwd`.
-When building a command including rm for example it's wise to test it before running it.
+Test your setup first without running a command and use `--list` or `echo` instead.
+When building a command including for example `rm` it's wise to test it before running it.
 
 ```diff
 -alias cargoBelow='project-below --file=Cargo.toml rm -rf target'
-+alias cargoBelow='project-below --file=Cargo.toml pwd'
++alias cargoBelow='project-below --file=Cargo.toml --list'
+```
+
+```diff
+-alias cargoBelow='project-below --file=Cargo.toml      rm -rf target'
++alias cargoBelow='project-below --file=Cargo.toml echo rm -rf target'
+```
+
+### Smart `cd` change directory
+
+You can create a smart `cd` command relatively easy with `project-below` and [`fzf`](https://github.com/junegunn/fzf).
+For example switching into one of the git repos can be done like this:
+
+```bash
+alias cdg='cd "$(project-below --directory=.git --list | fzf)"'
+cdg
 ```
 
 ### Use `nice`

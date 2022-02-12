@@ -36,12 +36,19 @@ pub fn build() -> App<'static> {
                 .long_help("Traverse into projects that already matched. This can be helpful for monorepos which include the config file in the main folder and each subfolder."),
         )
         .arg(
+            Arg::new("list")
+                .long("list")
+                .help("List all the directories instead of executing a command")
+                .long_help("List all the directories instead of executing a command. This can be helpful for piping into other tools like fzf."),
+        )
+        .arg(
             Arg::new("command")
                 .value_name("COMMAND")
                 .value_hint(ValueHint::CommandWithArguments)
                 .allow_invalid_utf8(true)
                 .multiple_values(true)
-                .required(true)
+                .conflicts_with("list")
+                .required_unless_present("list")
                 .help("Command to be executed in each folder"),
         )
 }
