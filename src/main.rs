@@ -32,6 +32,7 @@ fn main() {
         );
         patterns
     };
+    let base = matches.value_of_os("base").unwrap();
     let recursive = matches.is_present("recursive");
     let command = matches
         .values_of_os("command")
@@ -39,7 +40,7 @@ fn main() {
 
     let rx = {
         let (tx, rx) = channel();
-        WalkBuilder::new(".")
+        WalkBuilder::new(base)
             .filter_entry(|d| d.path().is_dir())
             .build_parallel()
             .run(|| {
@@ -68,7 +69,7 @@ fn main() {
     };
 
     for path in rx {
-        println!("{}", path.display());
+        println!("{}", path.strip_prefix(base).unwrap_or(&path).display());
         // TODO: maybe check path.exists()
 
         if let Some(command) = &command {

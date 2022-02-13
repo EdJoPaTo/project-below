@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use clap::{app_from_crate, App, AppSettings, Arg, ValueHint};
 use glob::Pattern;
 
@@ -5,6 +7,21 @@ use glob::Pattern;
 pub fn build() -> App<'static> {
     app_from_crate!()
         .setting(AppSettings::TrailingVarArg)
+        .arg(
+            Arg::new("base")
+                .long("base-dir")
+                .value_name("DIR")
+                .value_hint(ValueHint::DirPath)
+                .allow_invalid_utf8(true)
+                .validator_os(|p| if Path::new(p).exists() {
+                    Ok(())
+                } else {
+                    Err("path does not exist")
+                })
+                .takes_value(true)
+                .default_value(".")
+                .help("Base directory from where the search starts"),
+        )
         .arg(
             Arg::new("directory")
                 .short('d')
