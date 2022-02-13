@@ -1,7 +1,7 @@
 use std::path::Path;
 
 use clap::{app_from_crate, App, AppSettings, Arg, ValueHint};
-use glob::Pattern;
+use globset::Glob;
 
 #[must_use]
 pub fn build() -> App<'static> {
@@ -28,7 +28,7 @@ pub fn build() -> App<'static> {
                 .long("directory")
                 .value_name("PATTERN")
                 .value_hint(ValueHint::DirPath)
-                .validator(Pattern::new)
+                .validator(Glob::new)
                 .multiple_occurrences(true)
                 .takes_value(true)
                 .required_unless_present_any(&["file"])
@@ -40,7 +40,7 @@ pub fn build() -> App<'static> {
                 .long("file")
                 .value_name("PATTERN")
                 .value_hint(ValueHint::FilePath)
-                .validator(Pattern::new)
+                .validator(Glob::new)
                 .multiple_occurrences(true)
                 .takes_value(true)
                 .required_unless_present_any(&["directory"])

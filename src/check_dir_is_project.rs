@@ -71,12 +71,12 @@ pub struct Identifier {
     raw: String,
 }
 
-#[derive(Debug, Hash, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 enum Position {
     Anywhere,
     Here,
     Below {
-        direct: glob::Pattern,
+        direct: globset::GlobMatcher,
         below: Box<Self>,
     },
 }
@@ -94,7 +94,11 @@ impl Position {
             [direct, below @ ..] => {
                 let below = Self::new(below.iter().map(std::ops::Deref::deref));
                 Self::Below {
-                    direct: glob::Pattern::new(direct).expect("invalid glob pattern"),
+                    direct: globset::GlobBuilder::new(direct)
+                        .literal_separator(true)
+                        .build()
+                        .expect("invalid glob pattern")
+                        .compile_matcher(),
                     below: Box::new(below),
                 }
             }
@@ -109,10 +113,10 @@ impl Position {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct Pattern {
     base: Identifier,
-    target: glob::Pattern,
+    target: globset::GlobMatcher,
     position: Position,
 }
 
@@ -140,7 +144,11 @@ impl Pattern {
             [] => panic!("empty glob pattern"),
             [position @ .., target] => {
                 let position = Position::new(position.iter().map(std::ops::Deref::deref));
-                let target = glob::Pattern::new(target).expect("invalid glob pattern");
+                let target = globset::GlobBuilder::new(target)
+                    .literal_separator(true)
+                    .build()
+                    .expect("invalid glob pattern")
+                    .compile_matcher();
                 Self {
                     base: Identifier {
                         kind,
@@ -158,7 +166,7 @@ impl Pattern {
             Position::Anywhere => Some(self.clone()),
             Position::Here => None,
             Position::Below { direct, below } => {
-                if direct.matches(dir) {
+                if direct.is_match(dir) {
                     Some(Self {
                         base: self.base.clone(),
                         target: self.target.clone(),
@@ -183,7 +191,7 @@ impl Pattern {
 
             path.file_name()
                 .and_then(std::ffi::OsStr::to_str)
-                .map_or(false, |name| self.target.matches(name))
+                .map_or(false, |name| self.target.is_match(name))
         } else {
             false
         }
@@ -194,60 +202,48 @@ impl Pattern {
 fn pattern_works_anywhere() {
     let kind = Kind::File;
     let raw = "**/*.rs".to_string();
-    assert_eq!(
-        Pattern::new(&raw, kind),
-        Pattern {
-            base: Identifier { kind, raw },
-            target: glob::Pattern::new("*.rs").unwrap(),
-            position: Position::Anywhere,
-        }
-    );
+    let result = Pattern::new(&raw, kind);
+    assert_eq!(result.base, Identifier { kind, raw });
+    assert_eq!(result.target.glob().glob(), "*.rs");
+    assert!(matches!(result.position, Position::Anywhere));
 }
 
 #[test]
 fn pattern_works_in_base() {
     let kind = Kind::File;
     let raw = "*.rs".to_string();
-    assert_eq!(
-        Pattern::new(&raw, kind),
-        Pattern {
-            base: Identifier { kind, raw },
-            target: glob::Pattern::new("*.rs").unwrap(),
-            position: Position::Here,
-        }
-    );
+    let result = Pattern::new(&raw, kind);
+    assert_eq!(result.base, Identifier { kind, raw });
+    assert_eq!(result.target.glob().glob(), "*.rs");
+    assert!(matches!(result.position, Position::Here));
 }
 
 #[test]
 fn pattern_works_in_subdir() {
     let kind = Kind::File;
     let raw = "f*o/*.rs".to_string();
-    assert_eq!(
-        Pattern::new(&raw, kind),
-        Pattern {
-            base: Identifier { kind, raw },
-            target: glob::Pattern::new("*.rs").unwrap(),
-            position: Position::Below {
-                direct: glob::Pattern::new("f*o").unwrap(),
-                below: Box::new(Position::Here),
-            },
-        }
-    );
+    let result = Pattern::new(&raw, kind);
+    assert_eq!(result.base, Identifier { kind, raw });
+    assert_eq!(result.target.glob().glob(), "*.rs");
+    if let Position::Below { direct, below } = result.position {
+        assert_eq!(direct.glob().glob(), "f*o");
+        assert!(matches!(*below, Position::Here));
+    } else {
+        panic!("wrong position");
+    }
 }
 
 #[test]
 fn pattern_works_anywhere_in_subdir() {
     let kind = Kind::File;
     let raw = "f*o/**/*.rs".to_string();
-    assert_eq!(
-        Pattern::new(&raw, kind),
-        Pattern {
-            base: Identifier { kind, raw },
-            target: glob::Pattern::new("*.rs").unwrap(),
-            position: Position::Below {
-                direct: glob::Pattern::new("f*o").unwrap(),
-                below: Box::new(Position::Anywhere),
-            },
-        }
-    );
+    let result = Pattern::new(&raw, kind);
+    assert_eq!(result.base, Identifier { kind, raw });
+    assert_eq!(result.target.glob().glob(), "*.rs");
+    if let Position::Below { direct, below } = result.position {
+        assert_eq!(direct.glob().glob(), "f*o");
+        assert!(matches!(*below, Position::Anywhere));
+    } else {
+        panic!("wrong position");
+    }
 }
