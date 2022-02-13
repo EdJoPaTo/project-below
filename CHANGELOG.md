@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Speed things up with a parallel file walker.
+- Performance improvements.
 
 ## [0.1.0] - 2022-02-03
 

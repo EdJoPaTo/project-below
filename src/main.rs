@@ -41,7 +41,7 @@ fn main() {
     let rx = {
         let (tx, rx) = channel();
         WalkBuilder::new(base)
-            .filter_entry(|d| d.path().is_dir())
+            .filter_entry(|d| d.file_type().map_or(false, |o| o.is_dir()))
             .build_parallel()
             .run(|| {
                 let patterns = patterns.clone();
@@ -49,12 +49,12 @@ fn main() {
                 Box::new(move |entry| {
                     match entry {
                         Ok(d) => {
-                            let path = d.path();
                             if let Some(err) = d.error() {
-                                eprintln!("Warning for path {}: {}", d.path().display(), err);
+                                eprintln!("Warning for path {:?}: {}", d.path(), err);
                             }
-                            if check_dir_is_project(&patterns, path) {
-                                tx.send(path.to_path_buf()).expect("failed to send");
+                            let path = d.into_path();
+                            if check_dir_is_project(&patterns, &path) {
+                                tx.send(path).expect("failed to send");
                                 if !recursive {
                                     return ignore::WalkState::Skip;
                                 }
