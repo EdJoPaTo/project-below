@@ -125,8 +125,8 @@ impl Pattern {
         Self::new(p, Kind::File)
     }
 
-    fn new(p: &str, kind: Kind) -> Self {
-        let splitted = Path::new(p)
+    fn new(raw: &str, kind: Kind) -> Self {
+        let splitted = Path::new(raw)
             .components()
             .filter(|o| !matches!(o, Component::Prefix(..) | Component::RootDir))
             .map(|o| {
@@ -143,8 +143,8 @@ impl Pattern {
                 let target = glob::Pattern::new(target).expect("invalid glob pattern");
                 Self {
                     base: Identifier {
-                        raw: p.to_string(),
                         kind,
+                        raw: raw.to_string(),
                     },
                     target,
                     position,
@@ -172,15 +172,15 @@ impl Pattern {
     }
 
     fn matches(&self, path: &Path) -> bool {
-        let kind_matches = match self.base.kind {
-            Kind::File => path.is_file(),
-            Kind::Directory => path.is_dir(),
-        };
-        if !kind_matches {
-            return false;
-        }
-
         if matches!(self.position, Position::Anywhere | Position::Here) {
+            let kind_matches = match self.base.kind {
+                Kind::File => path.is_file(),
+                Kind::Directory => path.is_dir(),
+            };
+            if !kind_matches {
+                return false;
+            }
+
             path.file_name()
                 .and_then(std::ffi::OsStr::to_str)
                 .map_or(false, |name| self.target.matches(name))
