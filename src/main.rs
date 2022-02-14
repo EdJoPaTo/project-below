@@ -52,6 +52,9 @@ fn main() {
                             if let Some(err) = d.error() {
                                 eprintln!("Warning for path {:?}: {}", d.path(), err);
                             }
+                            if d.depth() == 0 {
+                                return ignore::WalkState::Continue;
+                            }
                             let path = d.into_path();
                             if check_dir_is_project(&patterns, &path) {
                                 tx.send(path).expect("failed to send");
