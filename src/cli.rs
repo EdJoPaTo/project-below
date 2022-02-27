@@ -1,12 +1,13 @@
 use std::path::Path;
 
-use clap::{app_from_crate, App, AppSettings, Arg, ValueHint};
+use clap::{command, Arg, Command, ValueHint};
 use globset::Glob;
 
+#[allow(clippy::too_many_lines)]
 #[must_use]
-pub fn build() -> App<'static> {
-    app_from_crate!()
-        .setting(AppSettings::TrailingVarArg)
+pub fn build() -> Command<'static> {
+    command!()
+        .trailing_var_arg(true)
         .arg(
             Arg::new("base")
                 .long("base-dir")
@@ -71,6 +72,6 @@ pub fn build() -> App<'static> {
 }
 
 #[test]
-fn verify_app() {
+fn verify() {
     build().debug_assert();
 }
