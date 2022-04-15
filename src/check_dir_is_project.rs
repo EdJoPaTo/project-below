@@ -106,10 +106,7 @@ impl Position {
     }
 
     const fn can_descent(&self) -> bool {
-        match self {
-            Position::Here => false,
-            Position::Anywhere | Position::Below { .. } => true,
-        }
+        !matches!(self, Self::Here)
     }
 }
 
