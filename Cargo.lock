@@ -197,7 +197,7 @@ checksum = "8e22443d1643a904602595ba1cd8f7d896afe56d26712531c5ff73a15b2fbf64"
 
 [[package]]
 name = "project-below"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "clap",
  "clap_complete",
