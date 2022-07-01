@@ -1,4 +1,5 @@
 use std::ffi::OsStr;
+use std::fmt::Write;
 use std::path::Path;
 use std::process::Command;
 use std::sync::mpsc::channel;
@@ -105,25 +106,25 @@ fn format_duration(duration: Duration) -> String {
     let mut result = String::new();
 
     if hours > 0 {
-        result += &format!("{:>3}h", hours);
+        write!(result, "{:>3}h", hours).unwrap();
     } else {
         result += "    ";
     }
 
     if minutes > 0 {
-        result += &format!("{:>2}m", minutes);
+        write!(result, "{:>2}m", minutes).unwrap();
     } else {
         result += "   ";
     }
 
     if seconds > 0 {
-        result += &format!("{:>2}s", seconds);
+        write!(result, "{:>2}s", seconds).unwrap();
     } else {
         result += "   ";
     }
 
     if hours == 0 && minutes == 0 {
-        result += &format!("{:>3}ms", duration.subsec_millis());
+        write!(result, "{:>3}ms", duration.subsec_millis()).unwrap();
     }
     result
 }
