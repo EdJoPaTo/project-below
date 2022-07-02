@@ -1,6 +1,6 @@
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::fmt::Write;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::mpsc::channel;
 use std::time::{Duration, Instant};
@@ -19,24 +19,26 @@ fn main() {
         let mut patterns = Vec::new();
         patterns.append(
             &mut matches
-                .values_of("directory")
+                .get_many::<String>("directory")
                 .unwrap_or_default()
+                .map(String::as_str)
                 .map(Pattern::new_directory)
                 .collect::<Vec<_>>(),
         );
         patterns.append(
             &mut matches
-                .values_of("file")
+                .get_many::<String>("file")
                 .unwrap_or_default()
+                .map(String::as_str)
                 .map(Pattern::new_file)
                 .collect::<Vec<_>>(),
         );
         patterns
     };
-    let base = matches.value_of_os("base").unwrap();
-    let recursive = matches.is_present("recursive");
+    let base = matches.get_one::<PathBuf>("base").unwrap();
+    let recursive = matches.contains_id("recursive");
     let command = matches
-        .values_of_os("command")
+        .get_many::<OsString>("command")
         .map(std::iter::Iterator::collect::<Vec<_>>);
 
     let rx = {

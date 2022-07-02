@@ -1,7 +1,5 @@
-use std::path::Path;
-
+use clap::builder::ValueParser;
 use clap::{command, Arg, Command, ValueHint};
-use globset::Glob;
 
 #[allow(clippy::too_many_lines)]
 #[must_use]
@@ -13,12 +11,7 @@ pub fn build() -> Command<'static> {
                 .long("base-dir")
                 .value_name("DIR")
                 .value_hint(ValueHint::DirPath)
-                .allow_invalid_utf8(true)
-                .validator_os(|p| if Path::new(p).exists() {
-                    Ok(())
-                } else {
-                    Err("path does not exist")
-                })
+                .value_parser(ValueParser::path_buf())
                 .takes_value(true)
                 .default_value(".")
                 .help("Base directory from where the search starts"),
@@ -29,8 +22,7 @@ pub fn build() -> Command<'static> {
                 .long("directory")
                 .value_name("PATTERN")
                 .value_hint(ValueHint::DirPath)
-                .validator(Glob::new)
-                .multiple_occurrences(true)
+                .action(clap::ArgAction::Append)
                 .takes_value(true)
                 .required_unless_present_any(&["file"])
                 .help("The project folder must contain a directory matching this glob pattern"),
@@ -41,8 +33,7 @@ pub fn build() -> Command<'static> {
                 .long("file")
                 .value_name("PATTERN")
                 .value_hint(ValueHint::FilePath)
-                .validator(Glob::new)
-                .multiple_occurrences(true)
+                .action(clap::ArgAction::Append)
                 .takes_value(true)
                 .required_unless_present_any(&["directory"])
                 .help("The project folder must contain a file matching this glob pattern"),
@@ -63,7 +54,7 @@ pub fn build() -> Command<'static> {
             Arg::new("command")
                 .value_name("COMMAND")
                 .value_hint(ValueHint::CommandWithArguments)
-                .allow_invalid_utf8(true)
+                .value_parser(ValueParser::os_string())
                 .multiple_values(true)
                 .conflicts_with("list")
                 .required_unless_present("list")
