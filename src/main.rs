@@ -1,10 +1,11 @@
-use std::ffi::{OsStr, OsString};
+use std::ffi::OsStr;
 use std::fmt::Write;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use std::sync::mpsc::channel;
 use std::time::{Duration, Instant};
 
+use clap::Parser;
 use ignore::WalkBuilder;
 
 use crate::check_dir_is_project::{check_dir_is_project, Pattern};
@@ -13,37 +14,38 @@ mod check_dir_is_project;
 mod cli;
 
 fn main() {
-    let matches = cli::build().get_matches();
+    let matches = cli::Cli::parse();
+    let cli::Cli {
+        base_dir: base,
+        command,
+        recursive,
+        ..
+    } = matches;
 
     let patterns = {
         let mut patterns = Vec::new();
         patterns.append(
             &mut matches
-                .get_many::<String>("directory")
-                .unwrap_or_default()
+                .directory
+                .iter()
                 .map(String::as_str)
                 .map(Pattern::new_directory)
                 .collect::<Vec<_>>(),
         );
         patterns.append(
             &mut matches
-                .get_many::<String>("file")
-                .unwrap_or_default()
+                .file
+                .iter()
                 .map(String::as_str)
                 .map(Pattern::new_file)
                 .collect::<Vec<_>>(),
         );
         patterns
     };
-    let base = matches.get_one::<PathBuf>("base").unwrap();
-    let recursive = matches.contains_id("recursive");
-    let command = matches
-        .get_many::<OsString>("command")
-        .map(std::iter::Iterator::collect::<Vec<_>>);
 
     let rx = {
         let (tx, rx) = channel();
-        WalkBuilder::new(base)
+        WalkBuilder::new(&base)
             .filter_entry(|d| d.file_type().map_or(false, |o| o.is_dir()))
             .build_parallel()
             .run(|| {
@@ -75,12 +77,12 @@ fn main() {
     };
 
     for path in rx {
-        println!("{}", path.strip_prefix(base).unwrap_or(&path).display());
+        println!("{}", path.strip_prefix(&base).unwrap_or(&path).display());
         // TODO: maybe check path.exists()
 
-        if let Some(command) = &command {
+        if !command.is_empty() {
             let start = Instant::now();
-            let status = generate_command(command, &path)
+            let status = generate_command(&command, &path)
                 .status()
                 .expect("failed to execute process");
             let took = start.elapsed();
