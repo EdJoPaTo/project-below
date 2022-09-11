@@ -4,7 +4,7 @@
 %global crate project-below
 
 Name:           rust-%{crate}
-Version:        {{{ git_dir_version }}}
+Version:        0.2.1.{{{ git_dir_version }}}
 Release:        1%{?dist}
 Summary:        Quickly run commands in many projects below the current directory
 
@@ -56,4 +56,5 @@ Summary:        %{summary}
 %endif
 
 %changelog
-{{{ git_dir_changelog }}}
+* Sun Sep 11 2022 EdJoPaTo <rfc-conform-git-commit-email@funny-long-domain-label-everyone-hates-as-it-is-too-long.edjopato.de> - 0.2.1-1
+- Initial package
