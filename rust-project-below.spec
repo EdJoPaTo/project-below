@@ -4,7 +4,7 @@
 %global crate project-below
 
 Name:           rust-%{crate}
-Version:        0.2.1.{{{ git_dir_version }}}
+Version:        0.2.1
 Release:        1%{?dist}
 Summary:        Quickly run commands in many projects below the current directory
 
