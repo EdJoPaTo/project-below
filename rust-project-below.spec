@@ -41,7 +41,7 @@ Summary:        %{summary}
 %{_bindir}/project-below
 
 %prep
-%autosetup -n %{crate}-%{version_no_tilde} -p1
+%autosetup -n %{crate}-{{{ current_commit_short_hash }}} -p1
 %cargo_prep
 
 %build
