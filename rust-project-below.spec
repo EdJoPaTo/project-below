@@ -54,3 +54,5 @@ Summary:        %{summary}
 %endif
 
 %changelog
+* Sun Sep 11 2022 EdJoPaTo <rfc-conform-git-commit-email@funny-long-domain-label-everyone-hates-as-it-is-too-long.edjopato.de> - 0.2.1-1
+- Initial package
