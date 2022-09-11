@@ -10,8 +10,8 @@ Summary:        Quickly run commands in many projects below the current director
 
 # Upstream license specification: MIT
 License:        MIT
-URL:            https://crates.io/crates/project-below
-Source:         %{crates_source}
+URL:            https://github.com/EdJoPaTo/project-below.git
+Source:         https://github.com/EdJoPaTo/project-below.git
 
 ExclusiveArch:  %{rust_arches}
 
@@ -54,4 +54,3 @@ Summary:        %{summary}
 %endif
 
 %changelog
-
