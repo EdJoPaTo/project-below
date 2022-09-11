@@ -4,14 +4,16 @@
 %global crate project-below
 
 Name:           rust-%{crate}
-Version:        0.2.1
+Version:        {{{ git_dir_version }}}
 Release:        1%{?dist}
 Summary:        Quickly run commands in many projects below the current directory
 
 # Upstream license specification: MIT
 License:        MIT
 URL:            https://github.com/EdJoPaTo/project-below.git
-Source:         https://github.com/EdJoPaTo/project-below.git
+VCS:            {{{ git_dir_vcs }}}
+
+Source:         {{{ git_dir_pack }}}
 
 ExclusiveArch:  %{rust_arches}
 
@@ -54,5 +56,4 @@ Summary:        %{summary}
 %endif
 
 %changelog
-* Sun Sep 11 2022 EdJoPaTo <rfc-conform-git-commit-email@funny-long-domain-label-everyone-hates-as-it-is-too-long.edjopato.de> - 0.2.1-1
-- Initial package
+{{{ git_dir_changelog }}}
