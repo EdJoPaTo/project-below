@@ -55,7 +55,7 @@ fn main() {
                     match entry {
                         Ok(d) => {
                             if let Some(err) = d.error() {
-                                eprintln!("Warning for path {:?}: {}", d.path(), err);
+                                eprintln!("Warning for path {:?}: {err}", d.path());
                             }
                             if d.depth() == 0 {
                                 return ignore::WalkState::Continue;
@@ -68,7 +68,7 @@ fn main() {
                                 }
                             }
                         }
-                        Err(err) => eprintln!("Couldn't enter directory {}", err),
+                        Err(err) => eprintln!("Couldn't enter directory {err}"),
                     }
                     ignore::WalkState::Continue
                 })
@@ -85,8 +85,8 @@ fn main() {
             let status = generate_command(&command, &path)
                 .status()
                 .expect("failed to execute process");
-            let took = start.elapsed();
-            println!("took {}  {}\n", format_duration(took), status);
+            let took = format_duration(start.elapsed());
+            println!("took {took}  {status}\n");
         }
     }
 }
@@ -110,19 +110,19 @@ fn format_duration(duration: Duration) -> String {
     let mut result = String::new();
 
     if hours > 0 {
-        write!(result, "{:>3}h", hours).unwrap();
+        write!(result, "{hours:>3}h").unwrap();
     } else {
         result += "    ";
     }
 
     if minutes > 0 {
-        write!(result, "{:>2}m", minutes).unwrap();
+        write!(result, "{minutes:>2}m").unwrap();
     } else {
         result += "   ";
     }
 
     if seconds > 0 {
-        write!(result, "{:>2}s", seconds).unwrap();
+        write!(result, "{seconds:>2}s").unwrap();
     } else {
         result += "   ";
     }
