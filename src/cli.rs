@@ -4,10 +4,10 @@ use std::path::PathBuf;
 use clap::{Parser, ValueHint};
 
 #[derive(Debug, Parser)]
-#[clap(about, author, version, trailing_var_arg = true)]
+#[command(about, version)]
 pub struct Cli {
     /// Base directory from where the search starts
-    #[clap(
+    #[arg(
         long,
         value_name = "DIRECTORY",
         value_hint = ValueHint::DirPath,
@@ -16,7 +16,7 @@ pub struct Cli {
     pub base_dir: PathBuf,
 
     /// The project folder must contain a directory matching this glob pattern
-    #[clap(
+    #[arg(
         short, long,
         value_name = "PATTERN",
         value_hint = ValueHint::DirPath,
@@ -25,7 +25,7 @@ pub struct Cli {
     pub directory: Vec<String>,
 
     /// The project folder must contain a file matching this glob pattern
-    #[clap(
+    #[arg(
         short, long,
         value_name = "PATTERN",
         value_hint = ValueHint::FilePath,
@@ -36,19 +36,19 @@ pub struct Cli {
     /// Traverse into projects that already matched.
     ///
     /// This can be helpful for monorepos which include the config file in the main folder and each subfolder.
-    #[clap(long)]
+    #[arg(long)]
     pub recursive: bool,
 
     /// List all the directories instead of executing a command.
     ///
     /// This can be helpful for piping into other tools like fzf.
-    #[clap(long, conflicts_with = "command", required_unless_present = "command")]
+    #[arg(long, conflicts_with = "command", required_unless_present = "command")]
     pub list: bool,
 
     /// Command to be executed in each folder
-    #[clap(
+    #[arg(
         value_hint = ValueHint::CommandWithArguments,
-        multiple_values = true,
+        trailing_var_arg = true,
         conflicts_with = "list",
         required_unless_present = "list",
     )]

@@ -14,11 +14,11 @@ codegen-units = 1
 lto = true
 
 [build-dependencies]
-clap = { version = "3", features = ["derive"] }
-clap_complete = "3"
+clap = { version = "4", features = ["deprecated", "derive"] }
+clap_complete = "4"
 
 [dependencies]
-clap = { version = "3", features = ["derive", "wrap_help"] }
+clap = { version = "4", features = ["deprecated", "derive", "wrap_help"] }
 globset = "0.4"
 ignore = "0.4"
 
