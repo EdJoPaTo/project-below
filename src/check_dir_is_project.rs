@@ -162,17 +162,11 @@ impl Pattern {
         match &self.position {
             Position::Anywhere => Some(self.clone()),
             Position::Here => None,
-            Position::Below { direct, below } => {
-                if direct.is_match(dir) {
-                    Some(Self {
-                        base: self.base.clone(),
-                        target: self.target.clone(),
-                        position: (**below).clone(),
-                    })
-                } else {
-                    None
-                }
-            }
+            Position::Below { direct, below } => direct.is_match(dir).then(|| Self {
+                base: self.base.clone(),
+                target: self.target.clone(),
+                position: (**below).clone(),
+            }),
         }
     }
 
