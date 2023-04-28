@@ -297,7 +297,7 @@ dependencies = [
 
 [[package]]
 name = "project-below"
-version = "0.2.1"
+version = "1.0.0"
 dependencies = [
  "clap",
  "clap_complete",

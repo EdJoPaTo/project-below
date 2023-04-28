@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2023-04-28
+
+This tool is used daily for over a year now. I consider this stable. (no breaking change from v0.2)
+
 ### Changed
 
 - Do less memory allocations when doing stdout
