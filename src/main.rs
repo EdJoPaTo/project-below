@@ -84,7 +84,7 @@ fn main() {
             let start = Instant::now();
             let status = generate_command(&command, &path)
                 .status()
-                .expect("failed to execute process");
+                .unwrap_or_else(|err| panic!("failed to execute process {command:?}: {err}"));
             let took = format_duration(start.elapsed());
             println!("took {took}  {status}\n");
         }

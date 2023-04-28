@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Do less memory allocations when doing stdout
+- Improve error message when command failed to execute
 
 ## [0.2.1] - 2022-04-15
 
