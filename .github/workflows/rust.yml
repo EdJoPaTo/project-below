@@ -174,7 +174,7 @@ jobs:
         if: runner.os != 'Windows'
         run: >
           tar -cv
-          LICENSE README.md
+          CHANGELOG.md LICENSE README.md
           -C target/ completions/ -C ../
           -C target/${{ matrix.triple }}/release/ project-below
           | gzip --best > ${{ env.ARTIFACT_NAME }}.tar.gz
@@ -182,7 +182,7 @@ jobs:
         if: runner.os == 'Windows'
         run: >
           7z a ${{ env.ARTIFACT_NAME }}.zip
-          LICENSE README.md
+          CHANGELOG.md LICENSE README.md
           ./target/completions/
           ./target/${{ matrix.triple }}/release/project-below.exe
       - name: Package deb

@@ -27,6 +27,7 @@ ignore = "0.4"
 depends = ""
 assets = [
     ["target/release/project-below", "/usr/bin/project-below", "755"],
+    ["CHANGELOG.md", "/usr/share/doc/project-below/CHANGELOG.md", "644"],
     ["LICENSE", "/usr/share/licenses/project-below/LICENSE", "644"],
     ["README.md", "/usr/share/doc/project-below/README.md", "644"],
 
@@ -39,6 +40,7 @@ assets = [
 [package.metadata.generate-rpm]
 assets = [
     { source = "target/release/project-below", dest = "/usr/bin/project-below", mode = "755" },
+    { source = "CHANGELOG.md", dest = "/usr/share/doc/project-below/CHANGELOG.md", mode = "644", doc = true },
     { source = "LICENSE", dest = "/usr/share/licenses/project-below/LICENSE", mode = "644", doc = true },
     { source = "README.md", dest = "/usr/share/doc/project-below/README.md", mode = "644", doc = true },
 
