@@ -22,7 +22,7 @@ pub struct Cli {
         value_hint = ValueHint::DirPath,
         required_unless_present = "file",
     )]
-    pub directory: Vec<String>,
+    pub directory: Vec<PathBuf>,
 
     /// The project folder must contain a file matching this glob pattern
     #[arg(
@@ -31,7 +31,7 @@ pub struct Cli {
         value_hint = ValueHint::FilePath,
         required_unless_present = "directory",
     )]
-    pub file: Vec<String>,
+    pub file: Vec<PathBuf>,
 
     /// Traverse into projects that already matched.
     ///

@@ -27,16 +27,14 @@ fn main() {
         patterns.append(
             &mut matches
                 .directory
-                .iter()
-                .map(String::as_str)
+                .into_iter()
                 .map(Pattern::new_directory)
                 .collect::<Vec<_>>(),
         );
         patterns.append(
             &mut matches
                 .file
-                .iter()
-                .map(String::as_str)
+                .into_iter()
                 .map(Pattern::new_file)
                 .collect::<Vec<_>>(),
         );
