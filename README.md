@@ -1,6 +1,6 @@
 # Project below
 
-> Quickly run commands in many projects below the current directory
+> Quickly find or run commands in many projects below the current directory
 
 As I have many projects I often do the same tasks in multiple projects (like `git fetch`).
 
@@ -23,16 +23,23 @@ And can be done with this tool in a much simpler way:
 gitBelow fetch
 ```
 
-## Basic Idea
-
-This tool is always used in the following way.
-With the `[OPTIONS]` the subfolders are filtered.
-Then in every matching folder the command is executed.
-Check `--help` for all the filters.
+Also finding projects of a certain programming language below the current directory gets fairly easy this way:
 
 ```bash
-project-below [OPTIONS] <COMMAND>...
+project-below --file=Cargo.toml --list
 ```
+
+## Basic Idea
+
+This tool is always used in the following way:
+
+```bash
+project-below [OPTIONS] [COMMAND]...
+```
+
+With the `OPTIONS` the subfolders are filtered.
+Then in every matching folder the `COMMAND` is executed.
+Check `--help` for the available filters.
 
 For example lets run `git status` in every subfolder which contains a `package.json` (probably some Node.js project):
 
@@ -40,7 +47,7 @@ For example lets run `git status` in every subfolder which contains a `package.j
 project-below --file=package.json git status
 ```
 
-This can be simplified with aliases like it is done in the examples.
+This can be simplified with aliases like it is done in the [examples](#examples).
 The first part (executable and options) always stays the same for this kind of query, only the command (or its arguments) changes.
 You can put the first part in an alias and use the alias then:
 
