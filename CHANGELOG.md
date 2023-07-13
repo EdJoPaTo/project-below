@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Print paths canonical with `--canonical`
+
 ### Changed
 
 - Use `OsString` for `--file` and `--directory`. This allows characters that are possible for the OS but aren't Unicode.

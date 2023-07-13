@@ -45,6 +45,12 @@ pub struct Cli {
     #[arg(long, conflicts_with = "command", required_unless_present = "command")]
     pub list: bool,
 
+    /// Print paths canonicalized.
+    ///
+    /// This shows the full path instead of relative to the base-dir.
+    #[arg(long)]
+    pub canonical: bool,
+
     /// Command to be executed in each folder
     #[arg(
         value_hint = ValueHint::CommandWithArguments,

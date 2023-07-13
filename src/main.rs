@@ -17,6 +17,7 @@ fn main() {
     let matches = cli::Cli::parse();
     let cli::Cli {
         base_dir: base,
+        canonical,
         command,
         recursive,
         ..
@@ -75,8 +76,14 @@ fn main() {
     };
 
     for path in rx {
-        println!("{}", path.strip_prefix(&base).unwrap_or(&path).display());
-        // TODO: maybe check path.exists()
+        {
+            let p = if canonical {
+                &path
+            } else {
+                path.strip_prefix(&base).unwrap_or(&path)
+            };
+            println!("{}", p.display());
+        }
 
         if !command.is_empty() {
             let start = Instant::now();
