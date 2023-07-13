@@ -26,25 +26,25 @@ ignore = "0.4"
 [package.metadata.deb]
 depends = ""
 assets = [
-    ["target/release/project-below", "/usr/bin/project-below", "755"],
-    ["CHANGELOG.md", "/usr/share/doc/project-below/CHANGELOG.md", "644"],
-    ["LICENSE", "/usr/share/licenses/project-below/LICENSE", "644"],
-    ["README.md", "/usr/share/doc/project-below/README.md", "644"],
+	["target/release/project-below", "/usr/bin/project-below", "755"],
+	["CHANGELOG.md", "/usr/share/doc/project-below/CHANGELOG.md", "644"],
+	["LICENSE", "/usr/share/licenses/project-below/LICENSE", "644"],
+	["README.md", "/usr/share/doc/project-below/README.md", "644"],
 
-    ["target/completions/project-below.bash", "/usr/share/bash-completion/completions/project-below", "644"],
-    ["target/completions/project-below.fish", "/usr/share/fish/completions/project-below.fish", "644"],
-    ["target/completions/_project-below", "/usr/share/zsh/site-functions/_project-below", "644"],
+	["target/completions/project-below.bash", "/usr/share/bash-completion/completions/project-below", "644"],
+	["target/completions/project-below.fish", "/usr/share/fish/completions/project-below.fish", "644"],
+	["target/completions/_project-below", "/usr/share/zsh/site-functions/_project-below", "644"],
 ]
 
 # https://crates.io/crates/cargo-generate-rpm
 [package.metadata.generate-rpm]
 assets = [
-    { source = "target/release/project-below", dest = "/usr/bin/project-below", mode = "755" },
-    { source = "CHANGELOG.md", dest = "/usr/share/doc/project-below/CHANGELOG.md", mode = "644", doc = true },
-    { source = "LICENSE", dest = "/usr/share/licenses/project-below/LICENSE", mode = "644", doc = true },
-    { source = "README.md", dest = "/usr/share/doc/project-below/README.md", mode = "644", doc = true },
+	{ source = "target/release/project-below", dest = "/usr/bin/project-below", mode = "755" },
+	{ source = "CHANGELOG.md", dest = "/usr/share/doc/project-below/CHANGELOG.md", mode = "644", doc = true },
+	{ source = "LICENSE", dest = "/usr/share/licenses/project-below/LICENSE", mode = "644", doc = true },
+	{ source = "README.md", dest = "/usr/share/doc/project-below/README.md", mode = "644", doc = true },
 
-    { source = "target/completions/project-below.bash", dest = "/usr/share/bash-completion/completions/project-below", mode = "644" },
-    { source = "target/completions/project-below.fish", dest = "/usr/share/fish/vendor_completions.d/project-below.fish", mode = "644" },
-    { source = "target/completions/_project-below", dest = "/usr/share/zsh/site-functions/_project-below", mode = "644" },
+	{ source = "target/completions/project-below.bash", dest = "/usr/share/bash-completion/completions/project-below", mode = "644" },
+	{ source = "target/completions/project-below.fish", dest = "/usr/share/fish/vendor_completions.d/project-below.fish", mode = "644" },
+	{ source = "target/completions/_project-below", dest = "/usr/share/zsh/site-functions/_project-below", mode = "644" },
 ]
