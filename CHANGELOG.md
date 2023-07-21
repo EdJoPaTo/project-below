@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Print paths canonical with `--canonical`
+- Traverse into hidden folders to search for projects with `--hidden`
 
 ### Changed
 

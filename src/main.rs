@@ -17,9 +17,7 @@ fn main() {
     let matches = cli::Cli::parse();
     let cli::Cli {
         base_dir: base,
-        canonical,
         command,
-        recursive,
         ..
     } = matches;
 
@@ -45,6 +43,7 @@ fn main() {
     let rx = {
         let (tx, rx) = channel();
         WalkBuilder::new(&base)
+            .hidden(!matches.hidden)
             .filter_entry(|d| d.file_type().map_or(false, |o| o.is_dir()))
             .build_parallel()
             .run(|| {
@@ -62,7 +61,7 @@ fn main() {
                             let path = d.into_path();
                             if check_dir_is_project(&patterns, &path) {
                                 tx.send(path).expect("failed to send");
-                                if !recursive {
+                                if !matches.recursive {
                                     return ignore::WalkState::Skip;
                                 }
                             }
@@ -77,7 +76,7 @@ fn main() {
 
     for path in rx {
         {
-            let p = if canonical {
+            let p = if matches.canonical {
                 &path
             } else {
                 path.strip_prefix(&base).unwrap_or(&path)

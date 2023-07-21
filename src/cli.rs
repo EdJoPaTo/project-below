@@ -5,6 +5,7 @@ use clap::{Parser, ValueHint};
 
 #[derive(Debug, Parser)]
 #[command(about, version)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct Cli {
     /// Base directory from where the search starts
     #[arg(
@@ -38,6 +39,10 @@ pub struct Cli {
     /// This can be helpful for monorepos which include the config file in the main folder and each subfolder.
     #[arg(long)]
     pub recursive: bool,
+
+    /// Traverse into hidden folders to search for projects.
+    #[arg(long)]
+    pub hidden: bool,
 
     /// List all the directories instead of executing a command.
     ///
