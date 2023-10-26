@@ -37,11 +37,11 @@ This tool is always used in the following way:
 project-below [OPTIONS] [COMMAND]...
 ```
 
-With the `OPTIONS` the subfolders are filtered.
+With the `OPTIONS` the sub-folders are filtered.
 Then in every matching folder the `COMMAND` is executed.
 Check `--help` for the available filters.
 
-For example lets run `git status` in every subfolder which contains a `package.json` (probably some Node.js project):
+For example lets run `git status` in every sub-folder which contains a `package.json` (probably some Node.js project):
 
 ```bash
 project-below --file=package.json git status
@@ -157,7 +157,7 @@ When building a command including for example `rm` it's wise to test it before r
 ### Smart `cd` change directory
 
 You can create a smart `cd` command relatively easy with `project-below` and [`fzf`](https://github.com/junegunn/fzf).
-For example switching into one of the git repos can be done like this:
+For example switching into one of the git repositories can be done like this:
 
 ```bash
 alias cdg='cd "$(project-below --directory=.git --list | fzf)"'
@@ -201,7 +201,7 @@ gitBelow() {
 gitBelow fetch
 ```
 
-Sadly this approach lacks autocompletion of `git` commands: `gitBelow stat<Tab>` does not autocomplete to `gitBelow status`.
+Sadly this approach lacks auto-completion of `git` commands: `gitBelow stat<Tab>` does not auto-complete to `gitBelow status`.
 But this is only an annoyance.
 
 For commands like `npm` it's not even simple to come up with a useful solution.

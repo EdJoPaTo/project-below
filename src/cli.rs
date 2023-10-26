@@ -36,7 +36,7 @@ pub struct Cli {
 
     /// Traverse into projects that already matched.
     ///
-    /// This can be helpful for monorepos which include the config file in the main folder and each subfolder.
+    /// This can be helpful for monorepos which include the configuration file in the main folder and each sub-folder.
     #[arg(long)]
     pub recursive: bool,
 
@@ -46,11 +46,11 @@ pub struct Cli {
 
     /// List all the directories instead of executing a command.
     ///
-    /// This can be helpful for piping into other tools like fzf.
+    /// This can be helpful for piping into other tools like `fzf`.
     #[arg(long, conflicts_with = "command", required_unless_present = "command")]
     pub list: bool,
 
-    /// Print paths canonicalized.
+    /// Print canonical paths.
     ///
     /// This shows the full path instead of relative to the base-dir.
     #[arg(long)]
