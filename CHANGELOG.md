@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2024-02-05
+
 ### Added
 
 - When run with `--base-dir` paths can now be printed `--relative` to the working directory instead of relative to the `--base-dir`.
