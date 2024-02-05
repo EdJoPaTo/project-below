@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - When run with `--base-dir` paths can now be printed `--relative` to the working directory instead of relative to the `--base-dir`.
+- The output of `--list` can now be delimited with `NUL` via `--print0`. This is useful when used in scripts.
 
 ## [1.1.0] - 2023-10-24
 

@@ -50,6 +50,12 @@ pub struct Cli {
     #[arg(long, conflicts_with = "command", required_unless_present = "command")]
     pub list: bool,
 
+    /// Separate --list by the null character.
+    ///
+    /// Useful for piping results.
+    #[arg(long, conflicts_with = "command")]
+    pub print0: bool,
+
     /// Print canonical paths.
     ///
     /// This shows the full path instead of relative to the base-dir.
