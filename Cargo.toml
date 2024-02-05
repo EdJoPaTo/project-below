@@ -22,6 +22,7 @@ clap_complete = "4"
 clap = { version = "4", features = ["deprecated", "derive", "wrap_help"] }
 globset = "0.4"
 ignore = "0.4"
+pathdiff = "0.2"
 
 # https://crates.io/crates/cargo-deb
 [package.metadata.deb]

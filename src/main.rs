@@ -20,6 +20,8 @@ fn main() {
         command,
         ..
     } = matches;
+    let pwd = std::env::current_dir().ok();
+    let pwd = pwd.as_deref();
 
     let patterns = {
         let mut patterns = Vec::new();
@@ -75,12 +77,14 @@ fn main() {
     };
 
     for path in rx {
-        {
-            let p = if matches.canonical {
-                &path
-            } else {
-                path.strip_prefix(&base).unwrap_or(&path)
-            };
+        if matches.canonical {
+            println!("{}", path.display());
+        } else if matches.relative {
+            let relative = pwd.and_then(|pwd| pathdiff::diff_paths(&path, pwd));
+            let p = relative.as_ref().unwrap_or(&path);
+            println!("{}", p.display());
+        } else {
+            let p = path.strip_prefix(&base).unwrap_or(&path);
             println!("{}", p.display());
         }
 

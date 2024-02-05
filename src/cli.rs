@@ -53,8 +53,14 @@ pub struct Cli {
     /// Print canonical paths.
     ///
     /// This shows the full path instead of relative to the base-dir.
-    #[arg(long)]
+    #[arg(long, group = "path-output")]
     pub canonical: bool,
+
+    /// Print paths relative to the current working directory.
+    ///
+    /// This shows the path relative to the working directory instead of relative to the base-dir.
+    #[arg(long, group = "path-output")]
+    pub relative: bool,
 
     /// Command to be executed in each folder
     #[arg(
