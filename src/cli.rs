@@ -68,6 +68,10 @@ pub struct Cli {
     #[arg(long, group = "path-output")]
     pub relative: bool,
 
+    /// Do not print directory before command and time took / error code after command.
+    #[arg(long, conflicts_with_all = ["list", "path-output"])]
+    pub no_harness: bool,
+
     /// Command to be executed in each folder
     #[arg(
         value_hint = ValueHint::CommandWithArguments,

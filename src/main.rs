@@ -77,21 +77,23 @@ fn main() {
     };
 
     for path in rx {
-        if matches.canonical {
-            print!("{}", path.display());
-        } else if matches.relative {
-            let relative = pwd.and_then(|pwd| pathdiff::diff_paths(&path, pwd));
-            let p = relative.as_ref().unwrap_or(&path);
-            print!("{}", p.display());
-        } else {
-            let p = path.strip_prefix(&base).unwrap_or(&path);
-            print!("{}", p.display());
-        }
+        if !matches.no_harness {
+            if matches.canonical {
+                print!("{}", path.display());
+            } else if matches.relative {
+                let relative = pwd.and_then(|pwd| pathdiff::diff_paths(&path, pwd));
+                let p = relative.as_ref().unwrap_or(&path);
+                print!("{}", p.display());
+            } else {
+                let p = path.strip_prefix(&base).unwrap_or(&path);
+                print!("{}", p.display());
+            }
 
-        if matches.print0 {
-            print!("\0");
-        } else {
-            println!();
+            if matches.print0 {
+                print!("\0");
+            } else {
+                println!();
+            }
         }
 
         if !command.is_empty() {
@@ -99,8 +101,10 @@ fn main() {
             let status = generate_command(&command, &path)
                 .status()
                 .unwrap_or_else(|err| panic!("failed to execute process {command:?}: {err}"));
-            let took = format_duration(start.elapsed());
-            println!("took {took}  {status}\n");
+            if !matches.no_harness {
+                let took = format_duration(start.elapsed());
+                println!("took {took}  {status}\n");
+            }
         }
     }
 }
