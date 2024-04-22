@@ -1,7 +1,7 @@
-use std::ffi::OsStr;
+use std::ffi::OsString;
 use std::fmt::Write;
 use std::path::Path;
-use std::process::Command;
+use std::process::{Command, ExitStatus};
 use std::sync::mpsc::channel;
 use std::time::{Duration, Instant};
 
@@ -102,9 +102,7 @@ fn main() {
 
         if !command.is_empty() {
             let start = Instant::now();
-            let status = generate_command(&command, &path)
-                .status()
-                .unwrap_or_else(|err| panic!("failed to execute process {command:?}: {err}"));
+            let status = run_command(&command, &path);
             if !matches.no_harness {
                 let took = format_duration(start.elapsed());
                 println!("took {took}  {status}\n");
@@ -113,20 +111,13 @@ fn main() {
     }
 }
 
-fn generate_command<C, S>(command: C, working_dir: &Path) -> Command
-where
-    C: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-{
-    let mut command = command.into_iter();
-    let program = command.next().unwrap();
-    let args = command;
-    let mut command = Command::new(program);
-    command
-        .args(args)
+fn run_command(raw_command: &[OsString], working_dir: &Path) -> ExitStatus {
+    Command::new(&raw_command[0])
+        .args(&raw_command[1..])
         .current_dir(working_dir)
-        .env("PAGER", "cat");
-    command
+        .env("PAGER", "cat")
+        .status()
+        .unwrap_or_else(|err| panic!("failed to execute process {raw_command:?}: {err}"))
 }
 
 fn format_duration(duration: Duration) -> String {
