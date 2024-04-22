@@ -90,26 +90,19 @@ enum Position {
 }
 
 impl Position {
-    fn new<'i, I>(position: I) -> Self
-    where
-        I: IntoIterator<Item = &'i str>,
-    {
-        let position = position.into_iter().collect::<Vec<_>>();
-        match position.as_slice() {
+    fn new(position: &[&str]) -> Self {
+        match position {
             [] => Self::Here,
             ["**"] => Self::Anywhere,
             ["**", ..] => panic!("glob pattern after ** is too deep"),
-            [direct, below @ ..] => {
-                let below = Self::new(below.iter().map(std::ops::Deref::deref));
-                Self::Below {
-                    direct: globset::GlobBuilder::new(direct)
-                        .literal_separator(true)
-                        .build()
-                        .expect("invalid glob pattern")
-                        .compile_matcher(),
-                    below: Box::new(below),
-                }
-            }
+            [direct, below @ ..] => Self::Below {
+                direct: globset::GlobBuilder::new(direct)
+                    .literal_separator(true)
+                    .build()
+                    .expect("invalid glob pattern")
+                    .compile_matcher(),
+                below: Box::new(Self::new(below)),
+            },
         }
     }
 
@@ -148,7 +141,7 @@ impl Pattern {
         match splitted.as_slice() {
             [] => panic!("empty glob pattern"),
             [position @ .., target] => {
-                let position = Position::new(position.iter().map(std::ops::Deref::deref));
+                let position = Position::new(position);
                 let target = globset::GlobBuilder::new(target)
                     .literal_separator(true)
                     .build()
