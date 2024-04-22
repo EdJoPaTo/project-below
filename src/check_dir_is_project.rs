@@ -2,7 +2,10 @@ use std::collections::HashSet;
 use std::path::{Component, Path, PathBuf};
 
 pub fn check_dir_is_project(patterns: &[Pattern], dir: &Path) -> bool {
-    let mut state = patterns.iter().map(|o| o.base.clone()).collect();
+    let mut state = patterns
+        .iter()
+        .map(|pattern| pattern.base.clone())
+        .collect();
     drop(recursive(&mut state, dir, patterns));
 
     // When a pattern is matched successfully it will be removed.
@@ -16,7 +19,10 @@ fn recursive(
     dir: &Path,
     patterns: &[Pattern],
 ) -> std::io::Result<()> {
-    let entries = dir.read_dir()?.filter_map(Result::ok).map(|o| o.path());
+    let entries = dir
+        .read_dir()?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path());
     let mut dirs = Vec::new();
 
     for path in entries {
@@ -35,10 +41,12 @@ fn recursive(
 
     let patterns = patterns
         .iter()
-        .filter(|o| state.contains(&o.base))
+        .filter(|pattern| state.contains(&pattern.base))
         .collect::<Vec<_>>();
 
-    let all_still_possible = patterns.iter().all(|o| o.position.can_descent());
+    let all_still_possible = patterns
+        .iter()
+        .all(|pattern| pattern.position.can_descent());
     if !all_still_possible {
         return Ok(());
     }
@@ -47,7 +55,7 @@ fn recursive(
         if let Some(name) = dir.file_name().and_then(std::ffi::OsStr::to_str) {
             let relevant_patterns = patterns
                 .iter()
-                .filter_map(|o| o.descent(name))
+                .filter_map(|pattern| pattern.descent(name))
                 .collect::<Vec<_>>();
 
             if !relevant_patterns.is_empty() {
@@ -118,25 +126,25 @@ pub struct Pattern {
 }
 
 impl Pattern {
-    pub fn new_directory(p: PathBuf) -> Self {
-        Self::new(p, Kind::Directory)
+    pub fn new_directory(pattern: PathBuf) -> Self {
+        Self::new(pattern, Kind::Directory)
     }
 
-    pub fn new_file(p: PathBuf) -> Self {
-        Self::new(p, Kind::File)
+    pub fn new_file(pattern: PathBuf) -> Self {
+        Self::new(pattern, Kind::File)
     }
 
     fn new(raw: PathBuf, kind: Kind) -> Self {
         let splitted = raw
             .components()
-            .filter(|o| !matches!(o, Component::Prefix(..) | Component::RootDir))
-            .map(|o| {
-                o.as_os_str()
+            .filter(|component| !matches!(component, Component::Prefix(..) | Component::RootDir))
+            .map(|component| {
+                component
+                    .as_os_str()
                     .to_str()
                     .expect("pattern was already string, it should still be one")
             })
             .collect::<Vec<_>>();
-
         match splitted.as_slice() {
             [] => panic!("empty glob pattern"),
             [position @ .., target] => {
@@ -176,7 +184,6 @@ impl Pattern {
             if !kind_matches {
                 return false;
             }
-
             path.file_name()
                 .and_then(std::ffi::OsStr::to_str)
                 .map_or(false, |name| self.target.is_match(name))

@@ -46,21 +46,25 @@ fn main() {
         let (tx, rx) = channel();
         WalkBuilder::new(&base)
             .hidden(!matches.hidden)
-            .filter_entry(|d| d.file_type().map_or(false, |o| o.is_dir()))
+            .filter_entry(|dir_entry| {
+                dir_entry
+                    .file_type()
+                    .map_or(false, |file_type| file_type.is_dir())
+            })
             .build_parallel()
             .run(|| {
                 let patterns = patterns.clone();
                 let tx = tx.clone();
                 Box::new(move |entry| {
                     match entry {
-                        Ok(d) => {
-                            if let Some(err) = d.error() {
-                                eprintln!("Warning for path {:?}: {err}", d.path());
+                        Ok(dir_entry) => {
+                            if let Some(err) = dir_entry.error() {
+                                eprintln!("Warning for path {:?}: {err}", dir_entry.path());
                             }
-                            if d.depth() == 0 {
+                            if dir_entry.depth() == 0 {
                                 return ignore::WalkState::Continue;
                             }
-                            let path = d.into_path();
+                            let path = dir_entry.into_path();
                             if check_dir_is_project(&patterns, &path) {
                                 tx.send(path).expect("failed to send");
                                 if !matches.recursive {
@@ -82,11 +86,11 @@ fn main() {
                 print!("{}", path.display());
             } else if matches.relative {
                 let relative = pwd.and_then(|pwd| pathdiff::diff_paths(&path, pwd));
-                let p = relative.as_ref().unwrap_or(&path);
-                print!("{}", p.display());
+                let path = relative.as_ref().unwrap_or(&path);
+                print!("{}", path.display());
             } else {
-                let p = path.strip_prefix(&base).unwrap_or(&path);
-                print!("{}", p.display());
+                let path = path.strip_prefix(&base).unwrap_or(&path);
+                print!("{}", path.display());
             }
 
             if matches.print0 {
@@ -116,9 +120,13 @@ where
 {
     let mut command = command.into_iter();
     let program = command.next().unwrap();
-    let mut c = Command::new(program);
-    c.args(command).current_dir(working_dir).env("PAGER", "cat");
-    c
+    let args = command;
+    let mut command = Command::new(program);
+    command
+        .args(args)
+        .current_dir(working_dir)
+        .env("PAGER", "cat");
+    command
 }
 
 fn format_duration(duration: Duration) -> String {
