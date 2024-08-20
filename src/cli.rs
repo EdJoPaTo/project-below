@@ -47,12 +47,15 @@ pub struct Cli {
     /// List all the directories instead of executing a command.
     ///
     /// This can be helpful for piping into other tools like `fzf`.
-    #[arg(long, conflicts_with = "command", required_unless_present = "command")]
+    ///
+    /// This was previously required when no command was specified but can now safely omitted and will be removed in the next major release.
+    #[arg(long, conflicts_with = "command")]
+    #[deprecated = "Omit or command is completely fine"]
     pub list: bool,
 
-    /// Separate --list by the null character.
+    /// Separate listed paths by the null character.
     ///
-    /// Useful for piping results.
+    /// Useful for piping results. Does not work when executing a command.
     #[arg(long, conflicts_with = "command")]
     pub print0: bool,
 
@@ -77,7 +80,6 @@ pub struct Cli {
         value_hint = ValueHint::CommandWithArguments,
         trailing_var_arg = true,
         conflicts_with = "list",
-        required_unless_present = "list",
     )]
     pub command: Vec<OsString>,
 }

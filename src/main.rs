@@ -23,6 +23,11 @@ fn main() {
     let pwd = std::env::current_dir().ok();
     let pwd = pwd.as_deref();
 
+    #[allow(deprecated)]
+    if matches.list {
+        eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
+    }
+
     let patterns = {
         let mut patterns = Vec::new();
         patterns.append(

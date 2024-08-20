@@ -26,7 +26,7 @@ gitBelow fetch
 Also finding projects of a certain programming language below the current directory gets fairly easy this way:
 
 ```bash
-project-below --file=Cargo.toml --list
+project-below --file=Cargo.toml
 ```
 
 ## Basic Idea
@@ -141,12 +141,12 @@ After that all examples are alphabetically sorted.
 
 ### Test everything
 
-Test your setup first without running a command and use `--list` or `echo` instead.
+Test your setup first without running a command and use without command or add `echo` instead.
 When building a command including for example `rm` it's wise to test it before running it.
 
 ```diff
 -alias cargoBelow='project-below --file=Cargo.toml rm -rf target'
-+alias cargoBelow='project-below --file=Cargo.toml --list'
++alias cargoBelow='project-below --file=Cargo.toml'
 ```
 
 ```diff
@@ -160,7 +160,7 @@ You can create a smart `cd` command relatively easy with `project-below` and [`f
 For example switching into one of the git repositories can be done like this:
 
 ```bash
-alias cdg='cd "$(project-below --directory=.git --list | fzf)"'
+alias cdg='cd "$(project-below --directory=.git | fzf)"'
 cdg
 ```
 
