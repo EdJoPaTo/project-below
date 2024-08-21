@@ -1,3 +1,4 @@
+use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::{channel, Receiver};
 use std::thread;
@@ -20,6 +21,7 @@ pub fn walk(
                 .file_type()
                 .map_or(false, |file_type| file_type.is_dir())
         })
+        .threads(default_num_threads().get())
         .build_parallel();
     thread::spawn(move || {
         walk.run(|| {
@@ -51,4 +53,20 @@ pub fn walk(
         });
     });
     rx
+}
+
+/// Get the default number of threads to use.
+///
+/// Code from github.com/sharkdp/fd src/cli.rs
+fn default_num_threads() -> NonZeroUsize {
+    // If we can't get the amount of parallelism for some reason, then
+    // default to a single thread, because that is safe.
+    let fallback = NonZeroUsize::MIN;
+    // To limit startup overhead on massively parallel machines, don't use more
+    // than 64 threads.
+    let limit = NonZeroUsize::new(64).unwrap();
+
+    thread::available_parallelism()
+        .unwrap_or(fallback)
+        .min(limit)
 }
