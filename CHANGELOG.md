@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `--list` is no longer required (and will be removing in the next major release). The default without a command is to print the found paths which is simpler to use.
 - Walk directories and print / execute in different threads.
 - Utilize all available threads for directory walking.
+- Include the path in the line after a command finished. This is helpful for commands with much output.
 
 ## [1.2.0] - 2024-02-05
 

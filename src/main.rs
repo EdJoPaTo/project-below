@@ -1,5 +1,4 @@
 use std::ffi::OsString;
-use std::fmt::Write;
 use std::path::Path;
 use std::process::{Command, ExitStatus};
 use std::time::{Duration, Instant};
@@ -10,12 +9,11 @@ use crate::check_dir_is_project::Pattern;
 
 mod check_dir_is_project;
 mod cli;
+mod display;
 mod walk;
 
 fn main() {
     let matches = cli::Cli::parse();
-    let pwd = std::env::current_dir().ok();
-    let pwd = pwd.as_deref();
 
     #[allow(deprecated)]
     if matches.list {
@@ -48,72 +46,34 @@ fn main() {
         matches.recursive,
     );
 
+    let display = display::PathStyle::new(matches.canonical, matches.relative, matches.base_dir);
+
     for path in rx {
         if !matches.no_harness {
-            if matches.canonical {
-                print!("{}", path.display());
-            } else if matches.relative {
-                let relative = pwd.and_then(|pwd| pathdiff::diff_paths(&path, pwd));
-                let path = relative.as_ref().unwrap_or(&path);
-                print!("{}", path.display());
-            } else {
-                let path = path.strip_prefix(&matches.base_dir).unwrap_or(&path);
-                print!("{}", path.display());
-            }
-
             if matches.print0 {
-                print!("\0");
+                print!("{}\0", display.path(&path));
             } else {
-                println!();
+                println!("{}", display.path(&path));
             }
         }
 
         if !matches.command.is_empty() {
-            let start = Instant::now();
-            let status = run_command(&matches.command, &path);
+            let (status, took) = run_command(&matches.command, &path);
             if !matches.no_harness {
-                let took = format_duration(start.elapsed());
-                println!("took {took}  {status}\n");
+                display.print_endline(&path, took, status);
             }
         }
     }
 }
 
-fn run_command(raw_command: &[OsString], working_dir: &Path) -> ExitStatus {
-    Command::new(&raw_command[0])
+fn run_command(raw_command: &[OsString], working_dir: &Path) -> (ExitStatus, Duration) {
+    let start = Instant::now();
+    let status = Command::new(&raw_command[0])
         .args(&raw_command[1..])
         .current_dir(working_dir)
         .env("PAGER", "cat")
         .status()
-        .unwrap_or_else(|err| panic!("failed to execute process {raw_command:?}: {err}"))
-}
-
-fn format_duration(duration: Duration) -> String {
-    let seconds = duration.as_secs() % 60;
-    let minutes = (duration.as_secs() / 60) % 60;
-    let hours = duration.as_secs() / (60 * 60);
-    let mut result = String::new();
-
-    if hours > 0 {
-        write!(result, "{hours:>3}h").unwrap();
-    } else {
-        result += "    ";
-    }
-
-    if minutes > 0 {
-        write!(result, "{minutes:>2}m").unwrap();
-    } else {
-        result += "   ";
-    }
-
-    if seconds > 0 {
-        write!(result, "{seconds:>2}s").unwrap();
-    } else {
-        result += "   ";
-    }
-
-    if hours == 0 && minutes == 0 {
-        write!(result, "{:>3}ms", duration.subsec_millis()).unwrap();
-    }
-    result
+        .unwrap_or_else(|err| panic!("failed to execute process {raw_command:?}: {err}"));
+    let took = start.elapsed();
+    (status, took)
 }
