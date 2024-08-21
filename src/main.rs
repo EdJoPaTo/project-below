@@ -2,24 +2,18 @@ use std::ffi::OsString;
 use std::fmt::Write;
 use std::path::Path;
 use std::process::{Command, ExitStatus};
-use std::sync::mpsc::channel;
 use std::time::{Duration, Instant};
 
 use clap::Parser;
-use ignore::WalkBuilder;
 
-use crate::check_dir_is_project::{check_dir_is_project, Pattern};
+use crate::check_dir_is_project::Pattern;
 
 mod check_dir_is_project;
 mod cli;
+mod walk;
 
 fn main() {
     let matches = cli::Cli::parse();
-    let cli::Cli {
-        base_dir: base,
-        command,
-        ..
-    } = matches;
     let pwd = std::env::current_dir().ok();
     let pwd = pwd.as_deref();
 
@@ -47,43 +41,12 @@ fn main() {
         patterns
     };
 
-    let rx = {
-        let (tx, rx) = channel();
-        WalkBuilder::new(&base)
-            .hidden(!matches.hidden)
-            .filter_entry(|dir_entry| {
-                dir_entry
-                    .file_type()
-                    .map_or(false, |file_type| file_type.is_dir())
-            })
-            .build_parallel()
-            .run(|| {
-                let patterns = patterns.clone();
-                let tx = tx.clone();
-                Box::new(move |entry| {
-                    match entry {
-                        Ok(dir_entry) => {
-                            if let Some(err) = dir_entry.error() {
-                                eprintln!("Warning for path {:?}: {err}", dir_entry.path());
-                            }
-                            if dir_entry.depth() == 0 {
-                                return ignore::WalkState::Continue;
-                            }
-                            let path = dir_entry.into_path();
-                            if check_dir_is_project(&patterns, &path) {
-                                tx.send(path).expect("failed to send");
-                                if !matches.recursive {
-                                    return ignore::WalkState::Skip;
-                                }
-                            }
-                        }
-                        Err(err) => eprintln!("Couldn't enter directory {err}"),
-                    }
-                    ignore::WalkState::Continue
-                })
-            });
-        rx
-    };
+    let rx = walk::walk(
+        &matches.base_dir,
+        patterns,
+        matches.hidden,
+        matches.recursive,
+    );
 
     for path in rx {
         if !matches.no_harness {
@@ -94,7 +57,7 @@ fn main() {
                 let path = relative.as_ref().unwrap_or(&path);
                 print!("{}", path.display());
             } else {
-                let path = path.strip_prefix(&base).unwrap_or(&path);
+                let path = path.strip_prefix(&matches.base_dir).unwrap_or(&path);
                 print!("{}", path.display());
             }
 
@@ -105,9 +68,9 @@ fn main() {
             }
         }
 
-        if !command.is_empty() {
+        if !matches.command.is_empty() {
             let start = Instant::now();
-            let status = run_command(&command, &path);
+            let status = run_command(&matches.command, &path);
             if !matches.no_harness {
                 let took = format_duration(start.elapsed());
                 println!("took {took}  {status}\n");

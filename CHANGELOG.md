@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `--list` is no longer required (and will be removing in the next major release). The default without a command is to print the found paths which is simpler to use.
+- Walk directories and print / execute in different threads.
 
 ## [1.2.0] - 2024-02-05
 
