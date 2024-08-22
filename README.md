@@ -1,6 +1,6 @@
 # Project below
 
-> Quickly find or run commands in many projects below the current directory
+> Quickly find or run commands in many projects
 
 As I have many projects I often do the same tasks in multiple projects (like `git fetch`).
 
@@ -20,13 +20,27 @@ cd ..
 And can be done with this tool in a much simpler way:
 
 ```bash
+project-below --directory=.git git fetch
+
+# Or with an alias:
+alias gitBelow='project-below --directory=.git git'
 gitBelow fetch
 ```
 
-Also finding projects of a certain programming language below the current directory gets fairly easy this way:
+Finding projects of a certain programming language below the current directory gets fairly easy this way:
 
 ```bash
+cd ~
 project-below --file=Cargo.toml
+```
+
+Output:
+
+```plaintext
+git/hub/EdJoPaTo/public/mqttui
+git/hub/EdJoPaTo/public/project-below
+git/hub/EdJoPaTo/public/website-stalker
+…
 ```
 
 ## Basic Idea
@@ -164,16 +178,30 @@ alias cdg='cd "$(project-below --directory=.git | fzf)"'
 cdg
 ```
 
+### Use `sort`
+
+When using the listed output of found directories the result in unsorted due to multi-threading and the way the OS returns folders.
+Using `sort` is neat here:
+
+```diff
+-alias cdg='cd "$(project-below --directory=.git        | fzf)"'
++alias cdg='cd "$(project-below --directory=.git | sort | fzf)"'
+```
+
 ### Use `nice`
 
 Builds on a smaller machine with not as much computing power are annoying to run in the background.
-`nice` helps.
+`nice` helps by allowing the OS to prioritize other processes instead. (Sound servers like `pipewire` are usually the opposite of nice to ensure no stutters in sound)
 You can include it in your alias and all the commands will run via `nice`:
 
 ```diff
 -alias cargoBelow='project-below --file=Cargo.toml      cargo'
 +alias cargoBelow='project-below --file=Cargo.toml nice cargo'
 ```
+
+This way processes will still take all the resources, but when multiple processes want them, the nicer one won't get as many. This is really neat for background or longer tasks that aren't time-critical.
+
+Tip: `nice -n 19` is the nicest we can get. `nice` defaults to 10, so using `nice -n 19` in aliases results in being even nice to commands with just `nice`.
 
 ### PAGER
 

@@ -1,6 +1,6 @@
 [package]
 name = "project-below"
-description = "Quickly find or run commands in many projects below the current directory"
+description = "Quickly find or run commands in many projects"
 version = "1.2.0"
 license = "MIT"
 repository = "https://github.com/EdJoPaTo/project-below"
