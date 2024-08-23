@@ -1,15 +1,14 @@
-use std::ffi::OsString;
 use std::num::NonZeroUsize;
-use std::path::{Path, PathBuf};
-use std::process::{Command, ExitStatus};
-use std::time::{Duration, Instant};
+use std::path::PathBuf;
 
+use cli::CommandOutput;
 use crossbeam_channel::Receiver;
 
 use crate::check_dir_is_project::Pattern;
 
 mod check_dir_is_project;
 mod cli;
+mod command;
 mod display;
 mod walk;
 
@@ -41,7 +40,11 @@ fn main() {
             if !matches.no_header {
                 println!("{}", display.path(&path));
             }
-            let (status, took) = run_command(&matches.command, &path);
+            let command = command::Command::new(&matches.command, &path);
+            let (status, took) = match matches.output {
+                CommandOutput::Inherit => command.inherit(),
+                CommandOutput::Null => command.null(),
+            };
             if matches.result.print(status.success()) {
                 display.print_endline(&path, took, status);
             }
@@ -66,16 +69,4 @@ where
                 .expect("failed to spawn thread");
         }
     });
-}
-
-fn run_command(raw_command: &[OsString], working_dir: &Path) -> (ExitStatus, Duration) {
-    let start = Instant::now();
-    let status = Command::new(&raw_command[0])
-        .args(&raw_command[1..])
-        .current_dir(working_dir)
-        .env("PAGER", "cat")
-        .status()
-        .unwrap_or_else(|err| panic!("failed to execute process {raw_command:?}: {err}"));
-    let took = start.elapsed();
-    (status, took)
 }

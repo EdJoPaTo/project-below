@@ -72,18 +72,19 @@ pub struct Cli {
     #[arg(long, group = "path-output")]
     pub relative: bool,
 
-    /// Shortcut for `--no-header --result=never`.
-    #[arg(
-        long,
-        conflicts_with_all = ["path-output", "no_header", "result"],
-        requires = "command",
-        help_heading = "Command Options"
-    )]
-    no_harness: bool,
-
     /// Don't show the directory before the command.
     #[arg(long, requires = "command", help_heading = "Command Options")]
     pub no_header: bool,
+
+    /// Define how the command output should be handled.
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = CommandOutput::Inherit,
+        requires = "command",
+        help_heading = "Command Options"
+    )]
+    pub output: CommandOutput,
 
     /// Define whether a result of a finished command should be printed.
     ///
@@ -113,6 +114,34 @@ pub struct Cli {
     #[allow(clippy::option_option)]
     threads: Option<Option<NonZeroUsize>>,
 
+    /// Shortcut for `--no-header --result=never`.
+    #[arg(
+        long,
+        conflicts_with_all = ["path-output", "no_header", "result"],
+        requires = "command",
+        help_heading = "Command Option Shortcuts"
+    )]
+    no_harness: bool,
+
+    /// Shortcut for `--no-header --output=null`.
+    #[arg(
+        long,
+        conflicts_with_all = ["no_header", "output"],
+        requires = "command",
+        help_heading = "Command Option Shortcuts"
+    )]
+    only_result: bool,
+
+    /// Shortcut for `--no-header --output=null --result=never`.
+    #[arg(
+        long,
+        short,
+        conflicts_with_all = ["path-output", "no_header", "output", "result"],
+        requires = "command",
+        help_heading = "Command Option Shortcuts"
+    )]
+    quiet: bool,
+
     /// Command to be executed in each folder
     #[arg(
         value_hint = ValueHint::CommandWithArguments,
@@ -120,6 +149,14 @@ pub struct Cli {
         conflicts_with = "list",
     )]
     pub command: Vec<OsString>,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum CommandOutput {
+    /// Inherit stdout and stderr. When used with multiple threads it can create hard to understand output as everything mixes up.
+    Inherit,
+    /// Similar to attaching `/dev/null` to stdout / stderr.
+    Null,
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -149,6 +186,15 @@ impl Cli {
         }
         if matches.no_harness {
             matches.no_header = true;
+            matches.result = CommandResult::Never;
+        }
+        if matches.only_result {
+            matches.no_header = true;
+            matches.output = CommandOutput::Null;
+        }
+        if matches.quiet {
+            matches.no_header = true;
+            matches.output = CommandOutput::Null;
             matches.result = CommandResult::Never;
         }
         matches
