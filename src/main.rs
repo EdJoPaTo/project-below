@@ -20,24 +20,7 @@ fn main() {
         eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
     }
 
-    let patterns = {
-        let mut patterns = Vec::new();
-        patterns.append(
-            &mut matches
-                .directory
-                .into_iter()
-                .map(Pattern::new_directory)
-                .collect::<Vec<_>>(),
-        );
-        patterns.append(
-            &mut matches
-                .file
-                .into_iter()
-                .map(Pattern::new_file)
-                .collect::<Vec<_>>(),
-        );
-        patterns
-    };
+    let patterns = Pattern::many(matches.directory, matches.file);
 
     let rx = walk::walk(
         &matches.base_dir,

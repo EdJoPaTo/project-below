@@ -119,12 +119,14 @@ pub struct Pattern {
 }
 
 impl Pattern {
-    pub fn new_directory(pattern: PathBuf) -> Self {
-        Self::new(pattern, Kind::Directory)
-    }
-
-    pub fn new_file(pattern: PathBuf) -> Self {
-        Self::new(pattern, Kind::File)
+    pub fn many(directory: Vec<PathBuf>, file: Vec<PathBuf>) -> Vec<Self> {
+        let directory = directory
+            .into_iter()
+            .map(|pattern| Self::new(pattern, Kind::Directory));
+        let file = file
+            .into_iter()
+            .map(|pattern| Self::new(pattern, Kind::File));
+        directory.chain(file).collect()
     }
 
     fn new(raw: PathBuf, kind: Kind) -> Self {
