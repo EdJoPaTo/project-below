@@ -1,11 +1,11 @@
 use std::ffi::OsString;
 use std::path::PathBuf;
 
-use clap::{Parser, ValueHint};
+use clap::{Parser, ValueEnum, ValueHint};
 
 #[derive(Debug, Parser)]
 #[command(about, version)]
-#[allow(clippy::struct_excessive_bools)]
+#[allow(clippy::partial_pub_fields, clippy::struct_excessive_bools)]
 pub struct Cli {
     /// Base directory from where the search starts
     #[arg(
@@ -51,7 +51,7 @@ pub struct Cli {
     /// This was previously required when no command was specified but can now safely omitted and will be removed in the next major release.
     #[arg(long, conflicts_with = "command")]
     #[deprecated = "Omit or command is completely fine"]
-    pub list: bool,
+    list: bool,
 
     /// Separate listed paths by the null character.
     ///
@@ -71,9 +71,30 @@ pub struct Cli {
     #[arg(long, group = "path-output")]
     pub relative: bool,
 
-    /// Do not print directory before command and time took / error code after command.
-    #[arg(long, conflicts_with_all = ["list", "path-output"])]
-    pub no_harness: bool,
+    /// Shortcut for `--no-header --result=never`.
+    #[arg(
+        long,
+        conflicts_with_all = ["path-output", "no_header", "result"],
+        requires = "command",
+        help_heading = "Command Options"
+    )]
+    no_harness: bool,
+
+    /// Don't show the directory before the command.
+    #[arg(long, requires = "command", help_heading = "Command Options")]
+    pub no_header: bool,
+
+    /// Define whether a result of a finished command should be printed.
+    ///
+    /// The result includes the time it took, its exit code and the working directory.
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = CommandResult::Always,
+        requires = "command",
+        help_heading = "Command Options"
+    )]
+    pub result: CommandResult,
 
     /// Command to be executed in each folder
     #[arg(
@@ -82,6 +103,39 @@ pub struct Cli {
         conflicts_with = "list",
     )]
     pub command: Vec<OsString>,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum CommandResult {
+    Always,
+    Never,
+    NonZero,
+}
+impl CommandResult {
+    #[must_use]
+    pub const fn print(self, success: bool) -> bool {
+        match self {
+            Self::Always => true,
+            Self::Never => false,
+            Self::NonZero => !success,
+        }
+    }
+}
+
+impl Cli {
+    #[must_use]
+    pub fn get() -> Self {
+        let mut matches = Self::parse();
+        #[allow(deprecated)]
+        if matches.list {
+            eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
+        }
+        if matches.no_harness {
+            matches.no_header = true;
+            matches.result = CommandResult::Never;
+        }
+        matches
+    }
 }
 
 #[test]

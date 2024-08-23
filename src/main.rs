@@ -3,8 +3,6 @@ use std::path::Path;
 use std::process::{Command, ExitStatus};
 use std::time::{Duration, Instant};
 
-use clap::Parser;
-
 use crate::check_dir_is_project::Pattern;
 
 mod check_dir_is_project;
@@ -13,12 +11,7 @@ mod display;
 mod walk;
 
 fn main() {
-    let matches = cli::Cli::parse();
-
-    #[allow(deprecated)]
-    if matches.list {
-        eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
-    }
+    let matches = cli::Cli::get();
 
     let patterns = Pattern::many(matches.directory, matches.file);
 
@@ -31,18 +24,21 @@ fn main() {
 
     let display = display::PathStyle::new(matches.canonical, matches.relative, matches.base_dir);
 
-    for path in rx {
-        if !matches.no_harness {
+    if matches.command.is_empty() {
+        for path in rx {
             if matches.print0 {
                 print!("{}\0", display.path(&path));
             } else {
                 println!("{}", display.path(&path));
             }
         }
-
-        if !matches.command.is_empty() {
+    } else {
+        for path in rx {
+            if !matches.no_header {
+                println!("{}", display.path(&path));
+            }
             let (status, took) = run_command(&matches.command, &path);
-            if !matches.no_harness {
+            if matches.result.print(status.success()) {
                 display.print_endline(&path, took, status);
             }
         }
