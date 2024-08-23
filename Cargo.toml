@@ -6,6 +6,7 @@ license = "MIT"
 repository = "https://github.com/EdJoPaTo/project-below"
 authors = ["EdJoPaTo <project-below-rust@edjopato.de>"]
 edition = "2021"
+rust-version = "1.70"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lints.rust]
@@ -26,6 +27,7 @@ clap_mangen = "0.2"
 
 [dependencies]
 clap = { version = "4", features = ["deprecated", "derive", "wrap_help"] }
+crossbeam-channel = "0.5"
 globset = "0.4"
 ignore = "0.4"
 pathdiff = "0.2"

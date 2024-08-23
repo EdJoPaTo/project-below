@@ -1,7 +1,10 @@
 use std::ffi::OsString;
-use std::path::Path;
+use std::num::NonZeroUsize;
+use std::path::{Path, PathBuf};
 use std::process::{Command, ExitStatus};
 use std::time::{Duration, Instant};
+
+use crossbeam_channel::Receiver;
 
 use crate::check_dir_is_project::Pattern;
 
@@ -13,6 +16,7 @@ mod walk;
 fn main() {
     let matches = cli::Cli::get();
 
+    let threads = matches.threads();
     let patterns = Pattern::many(matches.directory, matches.file);
 
     let rx = walk::walk(
@@ -33,7 +37,7 @@ fn main() {
             }
         }
     } else {
-        for path in rx {
+        commandpool(threads, &rx, |path| {
             if !matches.no_header {
                 println!("{}", display.path(&path));
             }
@@ -41,8 +45,27 @@ fn main() {
             if matches.result.print(status.success()) {
                 display.print_endline(&path, took, status);
             }
-        }
+        });
     }
+}
+
+fn commandpool<'scope, F>(threads: NonZeroUsize, rx: &Receiver<PathBuf>, func: F)
+where
+    F: Fn(PathBuf) + Send + Sync + 'scope,
+{
+    std::thread::scope(|scope| {
+        for _ in 0..threads.get() {
+            let rx = rx.clone();
+            std::thread::Builder::new()
+                .name("commandpool".to_owned())
+                .spawn_scoped(scope, || {
+                    for path in rx {
+                        func(path);
+                    }
+                })
+                .expect("failed to spawn thread");
+        }
+    });
 }
 
 fn run_command(raw_command: &[OsString], working_dir: &Path) -> (ExitStatus, Duration) {

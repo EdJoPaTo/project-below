@@ -1,4 +1,5 @@
 use std::ffi::OsString;
+use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
 use clap::{Parser, ValueEnum, ValueHint};
@@ -96,6 +97,22 @@ pub struct Cli {
     )]
     pub result: CommandResult,
 
+    /// Execute multiple commands in parallel.
+    ///
+    /// A specific number of threads can be passed. Defaults to the available CPU cores.
+    ///
+    /// When this argument is not given commands are executed sequentially.
+    /// Running multiple commands in parallel might not always be useful when they act on the same resource.
+    /// For example `cargo fetch` uses the same cache where each process waits for the lock.
+    #[arg(
+        long,
+        short = 'j',
+        requires = "command",
+        help_heading = "Command Options"
+    )]
+    #[allow(clippy::option_option)]
+    threads: Option<Option<NonZeroUsize>>,
+
     /// Command to be executed in each folder
     #[arg(
         value_hint = ValueHint::CommandWithArguments,
@@ -135,6 +152,13 @@ impl Cli {
             matches.result = CommandResult::Never;
         }
         matches
+    }
+
+    #[must_use]
+    pub fn threads(&self) -> NonZeroUsize {
+        self.threads
+            .and_then(|wanted| wanted.or_else(|| std::thread::available_parallelism().ok()))
+            .unwrap_or(NonZeroUsize::MIN)
     }
 }
 

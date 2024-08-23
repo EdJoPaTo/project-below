@@ -1,8 +1,8 @@
 use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
-use std::sync::mpsc::{channel, Receiver};
 use std::thread;
 
+use crossbeam_channel::{bounded, Receiver};
 use ignore::WalkBuilder;
 
 use crate::check_dir_is_project::{check_dir_is_project, Pattern};
@@ -13,7 +13,8 @@ pub fn walk(
     include_hidden: bool,
     recursive: bool,
 ) -> Receiver<PathBuf> {
-    let (tx, rx) = channel();
+    let threads = default_num_threads().get();
+    let (tx, rx) = bounded(threads * 2);
     let walk = WalkBuilder::new(base_dir)
         .hidden(!include_hidden)
         .filter_entry(|dir_entry| {
@@ -21,9 +22,9 @@ pub fn walk(
                 .file_type()
                 .map_or(false, |file_type| file_type.is_dir())
         })
-        .threads(default_num_threads().get())
+        .threads(threads)
         .build_parallel();
-    thread::spawn(move || {
+    spawn("walker".to_owned(), move || {
         walk.run(|| {
             let patterns = patterns.clone();
             let tx = tx.clone();
@@ -69,4 +70,15 @@ fn default_num_threads() -> NonZeroUsize {
     thread::available_parallelism()
         .unwrap_or(fallback)
         .min(limit)
+}
+
+#[track_caller]
+fn spawn<F>(name: String, func: F)
+where
+    F: FnOnce() + Send + 'static,
+{
+    thread::Builder::new()
+        .name(name)
+        .spawn(func)
+        .expect("failed to spawn thread");
 }
