@@ -6,6 +6,7 @@ use crossbeam_channel::Receiver;
 
 use crate::check_dir_is_project::Pattern;
 
+mod byte_lines;
 mod check_dir_is_project;
 mod cli;
 mod command;
@@ -43,6 +44,11 @@ fn main() {
             let command = command::Command::new(&matches.command, &path);
             let (status, took) = match matches.output {
                 CommandOutput::Inherit => command.inherit(),
+                CommandOutput::LinePrefix => command.lineprefixed(&format!(
+                    "{:width$}  ",
+                    display.path(&path),
+                    width = matches.line_prefix_width
+                )),
                 CommandOutput::Null => command.null(),
             };
             if matches.result.print(status.success()) {

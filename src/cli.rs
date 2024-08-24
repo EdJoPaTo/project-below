@@ -72,6 +72,17 @@ pub struct Cli {
     #[arg(long, group = "path-output")]
     pub relative: bool,
 
+    /// Minimal width for `--output=line-prefix` to occupy.
+    ///
+    /// This is useful for improved readability due to aligned output.
+    #[arg(
+        long,
+        default_value_t = 40,
+        requires = "command",
+        help_heading = "Command Options"
+    )]
+    pub line_prefix_width: usize,
+
     /// Don't show the directory before the command.
     #[arg(long, requires = "command", help_heading = "Command Options")]
     pub no_header: bool,
@@ -114,6 +125,16 @@ pub struct Cli {
     #[allow(clippy::option_option)]
     threads: Option<Option<NonZeroUsize>>,
 
+    /// Shortcut for `--no-header --output=line-prefix`.
+    #[arg(
+        long,
+        short,
+        conflicts_with_all = ["no_header", "output"],
+        requires = "command",
+        help_heading = "Command Option Shortcuts"
+    )]
+    line_prefix: bool,
+
     /// Shortcut for `--no-header --result=never`.
     #[arg(
         long,
@@ -155,6 +176,8 @@ pub struct Cli {
 pub enum CommandOutput {
     /// Inherit stdout and stderr. When used with multiple threads it can create hard to understand output as everything mixes up.
     Inherit,
+    /// Print the output prefixed per line with the directory of the process it outputted.
+    LinePrefix,
     /// Similar to attaching `/dev/null` to stdout / stderr.
     Null,
 }
@@ -183,6 +206,10 @@ impl Cli {
         #[allow(deprecated)]
         if matches.list {
             eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
+        }
+        if matches.line_prefix {
+            matches.no_header = true;
+            matches.output = CommandOutput::LinePrefix;
         }
         if matches.no_harness {
             matches.no_header = true;

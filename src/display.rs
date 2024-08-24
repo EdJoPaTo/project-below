@@ -38,15 +38,15 @@ impl fmt::Display for DPath<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path = self.path;
         match &self.kind {
-            PathStyle::Canonical => write!(fmt, "{}", path.display()),
+            PathStyle::Canonical => path.display().fmt(fmt),
             PathStyle::PwdRelative(pwd) => {
                 let relative = pathdiff::diff_paths(path, pwd);
                 let path = relative.as_deref().unwrap_or(path);
-                write!(fmt, "{}", path.display())
+                path.display().fmt(fmt)
             }
             PathStyle::BaseRelative(base) => {
                 let path = path.strip_prefix(base).unwrap_or(path);
-                write!(fmt, "{}", path.display())
+                path.display().fmt(fmt)
             }
         }
     }
