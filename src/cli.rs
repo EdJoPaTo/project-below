@@ -130,6 +130,7 @@ pub struct Cli {
         long,
         short,
         conflicts_with_all = ["no_header", "output"],
+        group = "command-output-shortcut",
         requires = "command",
         help_heading = "Command Option Shortcuts"
     )]
@@ -139,6 +140,7 @@ pub struct Cli {
     #[arg(
         long,
         conflicts_with_all = ["path-output", "no_header", "result"],
+        group = "command-output-shortcut",
         requires = "command",
         help_heading = "Command Option Shortcuts"
     )]
@@ -148,6 +150,7 @@ pub struct Cli {
     #[arg(
         long,
         conflicts_with_all = ["no_header", "output"],
+        group = "command-output-shortcut",
         requires = "command",
         help_heading = "Command Option Shortcuts"
     )]
@@ -158,6 +161,7 @@ pub struct Cli {
         long,
         short,
         conflicts_with_all = ["path-output", "no_header", "output", "result"],
+        group = "command-output-shortcut",
         requires = "command",
         help_heading = "Command Option Shortcuts"
     )]
