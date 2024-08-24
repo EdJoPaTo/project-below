@@ -48,15 +48,27 @@ fn main() {
         commandpool(threads, &rx, |path| {
             let command = command::Command::new(&matches.command, &path);
             let harness = harness.create(&path);
-            let (status, took) = match matches.output {
+            match matches.output {
                 CommandOutput::Inherit => {
                     harness.inherit_header();
-                    command.inherit()
+                    let (status, took) = command.inherit();
+                    harness.result(took, status);
                 }
-                CommandOutput::LinePrefix => command.lineprefixed(&harness.line_prefix()),
-                CommandOutput::Null => command.null(),
-            };
-            harness.result(took, status);
+                CommandOutput::LinePrefix => {
+                    let (status, took) = command.lineprefixed(&harness.line_prefix());
+                    harness.result(took, status);
+                }
+                CommandOutput::Collect => {
+                    let (output, took) = command.output();
+                    let _stdout = std::io::stdout().lock();
+                    harness.collect(&output.stdout, &output.stderr);
+                    harness.result(took, output.status);
+                }
+                CommandOutput::Null => {
+                    let (status, took) = command.null();
+                    harness.result(took, status);
+                }
+            }
         });
     }
 }

@@ -69,6 +69,36 @@ impl<'a> Harness<'a> {
         format!("{:width$}  ", self.path())
     }
 
+    pub fn collect(&self, stdout: &[u8], stderr: &[u8]) {
+        let any_output = !stdout.is_empty() || !stderr.is_empty();
+
+        let need_linesplit = self
+            .config
+            .need_linesplit
+            .swap(any_output, Ordering::Relaxed);
+        if need_linesplit || any_output {
+            println!();
+        }
+        if let Some(last) = stdout.last() {
+            if !self.config.no_header {
+                println!("{}  Stdout:", self.path());
+            }
+            std::io::stdout().write_all(stdout).unwrap();
+            if *last != b'\n' {
+                std::io::stdout().write_all(b"\n").unwrap();
+            }
+        }
+        if let Some(last) = stderr.last() {
+            if !self.config.no_header {
+                eprintln!("{}  Stderr:", self.path());
+            }
+            std::io::stderr().write_all(stderr).unwrap();
+            if *last != b'\n' {
+                std::io::stderr().write_all(b"\n").unwrap();
+            }
+        }
+    }
+
     pub fn result(&self, took: Duration, status: ExitStatus) {
         if self.config.result.print(status.success()) {
             let took = DDuration(took);

@@ -210,6 +210,8 @@ pub enum CommandOutput {
     Inherit,
     /// Print the output prefixed per line with the directory of the process it outputted.
     LinePrefix,
+    /// Collect the output and print it once the command finishes.
+    Collect,
     /// Similar to attaching `/dev/null` to stdout / stderr.
     Null,
 }

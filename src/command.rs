@@ -1,7 +1,7 @@
 use std::ffi::OsString;
 use std::io::Write;
 use std::path::Path;
-use std::process::{Command as OsCommand, ExitStatus, Stdio};
+use std::process::{Command as OsCommand, ExitStatus, Output, Stdio};
 use std::thread::Scope;
 use std::time::{Duration, Instant};
 
@@ -84,6 +84,13 @@ impl Command {
         assert!(output.stderr.is_empty(), "stderr should be empty");
 
         (output.status, took)
+    }
+
+    pub fn output(mut self) -> (Output, Duration) {
+        let start = Instant::now();
+        let output = self.0.output().unwrap_or_else(|err| self.failed(&err));
+        let took = start.elapsed();
+        (output, took)
     }
 }
 
