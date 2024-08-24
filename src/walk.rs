@@ -58,7 +58,7 @@ pub fn walk(
 
 /// Get the default number of threads to use.
 ///
-/// Code from github.com/sharkdp/fd src/cli.rs
+/// Code from <https://github.com/sharkdp/fd/blob/b19136871310b01500b4f09eadd7387b8476be47/src/cli.rs#L759-L771>
 fn default_num_threads() -> NonZeroUsize {
     // If we can't get the amount of parallelism for some reason, then
     // default to a single thread, because that is safe.
