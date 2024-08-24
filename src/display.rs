@@ -1,10 +1,81 @@
 use core::fmt;
 use core::time::Duration;
+use std::io::Write;
+use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::process::ExitStatus;
+use std::sync::atomic::{AtomicBool, Ordering};
 
-use crate::cli::PathStyle as CliPathStyle;
+use crate::cli::{CommandResult, PathStyle as CliPathStyle};
 use crate::shortened_path::shortened_path;
+
+pub struct HarnessConfig {
+    path_style: PathStyle,
+    multithreaded: bool,
+    line_prefix_width: usize,
+    no_header: bool,
+    result: CommandResult,
+
+    need_linesplit: AtomicBool,
+}
+
+impl HarnessConfig {
+    pub const fn new(
+        path_style: PathStyle,
+        threads: NonZeroUsize,
+        line_prefix_width: usize,
+        no_header: bool,
+        result: CommandResult,
+    ) -> Self {
+        Self {
+            path_style,
+            multithreaded: threads.get() > 1,
+            line_prefix_width,
+            no_header,
+            result,
+
+            need_linesplit: AtomicBool::new(false),
+        }
+    }
+
+    pub const fn create<'a>(&'a self, path: &'a Path) -> Harness<'a> {
+        Harness { config: self, path }
+    }
+}
+
+pub struct Harness<'a> {
+    config: &'a HarnessConfig,
+    path: &'a Path,
+}
+
+impl<'a> Harness<'a> {
+    const fn path(&self) -> DPath<'a> {
+        self.config.path_style.path(self.path)
+    }
+
+    pub fn inherit_header(&self) {
+        if self.config.multithreaded || self.config.no_header {
+            return;
+        }
+        let need_linesplit = self.config.need_linesplit.swap(true, Ordering::Relaxed);
+        if need_linesplit {
+            println!();
+        }
+        println!("{}", self.path());
+    }
+
+    pub fn line_prefix(&self) -> String {
+        let width = self.config.line_prefix_width;
+        format!("{:width$}  ", self.path())
+    }
+
+    pub fn result(&self, took: Duration, status: ExitStatus) {
+        if self.config.result.print(status.success()) {
+            let took = DDuration(took);
+            println!("took {took}  {status} in {}", self.path());
+        }
+    }
+}
 
 pub enum PathStyle {
     Canonical,
@@ -29,11 +100,6 @@ impl PathStyle {
 
     pub const fn path<'a>(&'a self, path: &'a Path) -> DPath<'a> {
         DPath { kind: self, path }
-    }
-
-    pub fn print_endline(&self, path: &Path, took: Duration, status: ExitStatus) {
-        let took = DDuration(took);
-        println!("took {took}  {status} in {}", self.path(path));
     }
 }
 

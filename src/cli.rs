@@ -96,6 +96,8 @@ pub struct Cli {
     pub line_prefix_width: usize,
 
     /// Don't show the directory before the command.
+    ///
+    /// It's only shown on some `--output`. For example `inherit` only shows it when single-threaded.
     #[arg(long, requires = "command", help_heading = "Command Options")]
     pub no_header: bool,
 

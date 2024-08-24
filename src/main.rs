@@ -27,34 +27,36 @@ fn main() {
         matches.recursive,
     );
 
-    let display = display::PathStyle::new(matches.path_style, matches.base_dir);
+    let path_style = display::PathStyle::new(matches.path_style, matches.base_dir);
 
     if matches.command.is_empty() {
         for path in rx {
             if matches.print0 {
-                print!("{}\0", display.path(&path));
+                print!("{}\0", path_style.path(&path));
             } else {
-                println!("{}", display.path(&path));
+                println!("{}", path_style.path(&path));
             }
         }
     } else {
+        let harness = display::HarnessConfig::new(
+            path_style,
+            threads,
+            matches.line_prefix_width,
+            matches.no_header,
+            matches.result,
+        );
         commandpool(threads, &rx, |path| {
-            if !matches.no_header {
-                println!("{}", display.path(&path));
-            }
             let command = command::Command::new(&matches.command, &path);
+            let harness = harness.create(&path);
             let (status, took) = match matches.output {
-                CommandOutput::Inherit => command.inherit(),
-                CommandOutput::LinePrefix => command.lineprefixed(&format!(
-                    "{:width$}  ",
-                    display.path(&path),
-                    width = matches.line_prefix_width
-                )),
+                CommandOutput::Inherit => {
+                    harness.inherit_header();
+                    command.inherit()
+                }
+                CommandOutput::LinePrefix => command.lineprefixed(&harness.line_prefix()),
                 CommandOutput::Null => command.null(),
             };
-            if matches.result.print(status.success()) {
-                display.print_endline(&path, took, status);
-            }
+            harness.result(took, status);
         });
     }
 }
