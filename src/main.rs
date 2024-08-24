@@ -11,6 +11,7 @@ mod check_dir_is_project;
 mod cli;
 mod command;
 mod display;
+mod shortened_path;
 mod walk;
 
 fn main() {

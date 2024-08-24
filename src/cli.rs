@@ -196,6 +196,8 @@ pub enum PathStyle {
     Canonical,
     /// Only the name of the directory without its path
     Dirname,
+    /// Inspired by fish: `g/h/E/pu/project-below` is short for `git/hub/EdJoPaTo/public/project-below`
+    Short,
     /// Relative to the current working directory instead of the `--base-dir`
     WorkingDir,
 }

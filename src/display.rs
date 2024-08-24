@@ -4,11 +4,13 @@ use std::path::{Path, PathBuf};
 use std::process::ExitStatus;
 
 use crate::cli::PathStyle as CliPathStyle;
+use crate::shortened_path::shortened_path;
 
 pub enum PathStyle {
     Canonical,
     Dirname,
     BaseDir(PathBuf),
+    Short(PathBuf),
     WorkingDir(PathBuf),
 }
 
@@ -18,6 +20,7 @@ impl PathStyle {
             CliPathStyle::BaseDir => Self::BaseDir(base),
             CliPathStyle::Canonical => Self::Canonical,
             CliPathStyle::Dirname => Self::Dirname,
+            CliPathStyle::Short => Self::Short(base),
             CliPathStyle::WorkingDir => {
                 std::env::current_dir().map_or(Self::Canonical, Self::WorkingDir)
             }
@@ -60,6 +63,13 @@ impl fmt::Display for DPath<'_> {
                         .expect("Path should not be empty")
                         .to_string_lossy(),
                 )
+            }
+            PathStyle::Short(base) => {
+                if let Some(path) = shortened_path(path, base) {
+                    fmt.pad(&path)
+                } else {
+                    path.display().fmt(fmt)
+                }
             }
             PathStyle::WorkingDir(pwd) => {
                 let relative = pathdiff::diff_paths(path, pwd);
