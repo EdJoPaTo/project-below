@@ -51,7 +51,6 @@ pub struct Cli {
     ///
     /// This was previously required when no command was specified but can now safely omitted and will be removed in the next major release.
     #[arg(long, conflicts_with = "command")]
-    #[deprecated = "Omit or command is completely fine"]
     list: bool,
 
     /// Separate listed paths by the null character.
@@ -60,17 +59,30 @@ pub struct Cli {
     #[arg(long, conflicts_with = "command")]
     pub print0: bool,
 
-    /// Print canonical paths.
-    ///
-    /// This shows the full path instead of relative to the base-dir.
-    #[arg(long, group = "path-output")]
-    pub canonical: bool,
+    /// Print full, canonical paths. Shortcut for `--path-style=canonical`.
+    #[arg(
+        long,
+        short,
+        group = "path-output",
+        help_heading = "Path Display Style"
+    )]
+    canonical: bool,
 
     /// Print paths relative to the current working directory.
     ///
-    /// This shows the path relative to the working directory instead of relative to the base-dir.
-    #[arg(long, group = "path-output")]
-    pub relative: bool,
+    /// Use `--path-style=working-dir` instead. This argument will be removed in the next major release.
+    #[arg(long, group = "path-output", help_heading = "Path Display Style")]
+    relative: bool,
+
+    /// Style to print the found project paths with.
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = PathStyle::BaseDir,
+        group = "path-output",
+        help_heading = "Path Display Style"
+    )]
+    pub path_style: PathStyle,
 
     /// Minimal width for `--output=line-prefix` to occupy.
     ///
@@ -177,6 +189,18 @@ pub struct Cli {
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
+pub enum PathStyle {
+    /// Relative to the `--base-dir`
+    BaseDir,
+    /// Full, canonical path
+    Canonical,
+    /// Only the name of the directory without its path
+    Dirname,
+    /// Relative to the current working directory instead of the `--base-dir`
+    WorkingDir,
+}
+
+#[derive(Debug, Clone, Copy, ValueEnum)]
 pub enum CommandOutput {
     /// Inherit stdout and stderr. When used with multiple threads it can create hard to understand output as everything mixes up.
     Inherit,
@@ -207,9 +231,15 @@ impl Cli {
     #[must_use]
     pub fn get() -> Self {
         let mut matches = Self::parse();
-        #[allow(deprecated)]
         if matches.list {
             eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
+        }
+        if matches.canonical {
+            matches.path_style = PathStyle::Canonical;
+        }
+        if matches.relative {
+            eprintln!("project-below Hint: --relative is replaced by --path-style=working-dir and will be removed in the next major release");
+            matches.path_style = PathStyle::WorkingDir;
         }
         if matches.line_prefix {
             matches.no_header = true;

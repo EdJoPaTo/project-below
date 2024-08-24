@@ -3,20 +3,24 @@ use core::time::Duration;
 use std::path::{Path, PathBuf};
 use std::process::ExitStatus;
 
+use crate::cli::PathStyle as CliPathStyle;
+
 pub enum PathStyle {
     Canonical,
-    PwdRelative(PathBuf),
-    BaseRelative(PathBuf),
+    Dirname,
+    BaseDir(PathBuf),
+    WorkingDir(PathBuf),
 }
 
 impl PathStyle {
-    pub fn new(canonical: bool, relative: bool, base: PathBuf) -> Self {
-        if canonical {
-            Self::Canonical
-        } else if relative {
-            std::env::current_dir().map_or(Self::Canonical, Self::PwdRelative)
-        } else {
-            Self::BaseRelative(base)
+    pub fn new(cli: CliPathStyle, base: PathBuf) -> Self {
+        match cli {
+            CliPathStyle::BaseDir => Self::BaseDir(base),
+            CliPathStyle::Canonical => Self::Canonical,
+            CliPathStyle::Dirname => Self::Dirname,
+            CliPathStyle::WorkingDir => {
+                std::env::current_dir().map_or(Self::Canonical, Self::WorkingDir)
+            }
         }
     }
 
@@ -38,14 +42,23 @@ impl fmt::Display for DPath<'_> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         let path = self.path;
         match &self.kind {
-            PathStyle::Canonical => path.display().fmt(fmt),
-            PathStyle::PwdRelative(pwd) => {
-                let relative = pathdiff::diff_paths(path, pwd);
-                let path = relative.as_deref().unwrap_or(path);
+            PathStyle::BaseDir(base) => {
+                let path = path.strip_prefix(base).unwrap_or(path);
                 path.display().fmt(fmt)
             }
-            PathStyle::BaseRelative(base) => {
-                let path = path.strip_prefix(base).unwrap_or(path);
+            PathStyle::Canonical => path.display().fmt(fmt),
+            PathStyle::Dirname => {
+                // Use path.filename.expect(…).display().fmt(fmt) once stabilized
+                fmt.pad(
+                    &path
+                        .file_name()
+                        .expect("Path should not be empty")
+                        .to_string_lossy(),
+                )
+            }
+            PathStyle::WorkingDir(pwd) => {
+                let relative = pathdiff::diff_paths(path, pwd);
+                let path = relative.as_deref().unwrap_or(path);
                 path.display().fmt(fmt)
             }
         }

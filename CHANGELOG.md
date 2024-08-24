@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Spawn multiple commands in parallel with `--threads`.
+- Add `--path-style` with `base-dir` (default), `canonical`, `dirname` and `working-dir`. Replacement for `--canonical` and `--relative`.
 - Add options for command output handling:
   - `--no-header`
   - `--output` with `inherit`, `line-prefix` and `null`

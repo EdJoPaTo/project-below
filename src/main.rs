@@ -26,7 +26,7 @@ fn main() {
         matches.recursive,
     );
 
-    let display = display::PathStyle::new(matches.canonical, matches.relative, matches.base_dir);
+    let display = display::PathStyle::new(matches.path_style, matches.base_dir);
 
     if matches.command.is_empty() {
         for path in rx {
