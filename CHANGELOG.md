@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `--canonical` now prints canonical and not only full paths.
+- Globs matching in non-Utf-8 folders.
 
 ## [1.2.0] - 2024-02-05
 

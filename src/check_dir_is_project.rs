@@ -10,10 +10,10 @@ pub fn check_dir_is_project(patterns: &[Pattern], dir: &Path) -> bool {
 
     // When a pattern is matched successfully it will be removed.
     // If it is still there, it never matched.
-
     state.is_empty()
 }
 
+/// `state` contains the patterns that still need to be matched to accept the given path as a project
 fn recursive(
     state: &mut HashSet<Identifier>,
     dir: &Path,
@@ -44,15 +44,8 @@ fn recursive(
         .filter(|pattern| state.contains(&pattern.base))
         .collect::<Vec<_>>();
 
-    let all_still_possible = patterns
-        .iter()
-        .all(|pattern| pattern.position.can_descent());
-    if !all_still_possible {
-        return Ok(());
-    }
-
     for dir in dirs {
-        if let Some(name) = dir.file_name().and_then(std::ffi::OsStr::to_str) {
+        if let Some(name) = dir.file_name() {
             let relevant_patterns = patterns
                 .iter()
                 .filter_map(|pattern| pattern.descent(name))
@@ -74,7 +67,7 @@ enum Kind {
 }
 
 #[derive(Debug, Hash, Clone, PartialEq, Eq)]
-pub struct Identifier {
+struct Identifier {
     kind: Kind,
     raw: PathBuf,
 }
@@ -105,17 +98,13 @@ impl Position {
             },
         }
     }
-
-    const fn can_descent(&self) -> bool {
-        !matches!(self, Self::Here)
-    }
 }
 
 #[derive(Debug, Clone)]
 pub struct Pattern {
     base: Identifier,
-    target: globset::GlobMatcher,
     position: Position,
+    target: globset::GlobMatcher,
 }
 
 impl Pattern {
@@ -151,14 +140,14 @@ impl Pattern {
                     .compile_matcher();
                 Self {
                     base: Identifier { kind, raw },
-                    target,
                     position,
+                    target,
                 }
             }
         }
     }
 
-    fn descent(&self, dir: &str) -> Option<Self> {
+    fn descent<P: AsRef<Path>>(&self, dir: P) -> Option<Self> {
         match &self.position {
             Position::Anywhere => Some(self.clone()),
             Position::Here => None,
@@ -171,19 +160,19 @@ impl Pattern {
     }
 
     fn matches(&self, path: &Path) -> bool {
-        if matches!(self.position, Position::Anywhere | Position::Here) {
-            let kind_matches = match self.base.kind {
-                Kind::File => path.is_file(),
-                Kind::Directory => path.is_dir(),
-            };
-            if !kind_matches {
-                return false;
+        match self.position {
+            Position::Anywhere | Position::Here => {
+                let kind_matches = match self.base.kind {
+                    Kind::File => path.is_file(),
+                    Kind::Directory => path.is_dir(),
+                };
+                if !kind_matches {
+                    return false;
+                }
+                path.file_name()
+                    .map_or(false, |name| self.target.is_match(name))
             }
-            path.file_name()
-                .and_then(std::ffi::OsStr::to_str)
-                .map_or(false, |name| self.target.is_match(name))
-        } else {
-            false
+            Position::Below { .. } => false,
         }
     }
 }
