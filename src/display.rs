@@ -46,7 +46,12 @@ impl fmt::Display for DPath<'_> {
                 let path = path.strip_prefix(base).unwrap_or(path);
                 path.display().fmt(fmt)
             }
-            PathStyle::Canonical => path.display().fmt(fmt),
+            PathStyle::Canonical => path
+                .canonicalize()
+                .as_deref()
+                .unwrap_or(path)
+                .display()
+                .fmt(fmt),
             PathStyle::Dirname => {
                 // Use path.filename.expect(…).display().fmt(fmt) once stabilized
                 fmt.pad(

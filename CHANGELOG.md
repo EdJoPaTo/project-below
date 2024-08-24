@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Utilize all available threads for directory walking.
 - Include the path in the line after a command finished. This is helpful for commands with much output.
 
+### Fixed
+
+- `--canonical` now prints canonical and not only full paths.
+
 ## [1.2.0] - 2024-02-05
 
 ### Added
