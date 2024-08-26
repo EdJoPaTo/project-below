@@ -63,7 +63,7 @@ fn main() {
                 CommandOutput::Collect => {
                     let (output, took) = command.output();
                     let _stdout = std::io::stdout().lock();
-                    harness.collect(&output.stdout, &output.stderr);
+                    harness.collect(&output);
                     harness.result(took, output.status);
                 }
                 CommandOutput::Null => {

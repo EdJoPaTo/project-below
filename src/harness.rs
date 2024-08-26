@@ -1,7 +1,7 @@
 use std::io::Write;
 use std::num::NonZeroUsize;
 use std::path::Path;
-use std::process::ExitStatus;
+use std::process::{ExitStatus, Output};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
@@ -15,6 +15,7 @@ pub struct Config {
     no_header: bool,
     result: CommandResult,
 
+    first: AtomicBool,
     need_linesplit: AtomicBool,
 }
 
@@ -33,6 +34,7 @@ impl Config {
             no_header,
             result,
 
+            first: AtomicBool::new(true),
             need_linesplit: AtomicBool::new(false),
         }
     }
@@ -56,8 +58,8 @@ impl<'a> Harness<'a> {
         if self.config.multithreaded || self.config.no_header {
             return;
         }
-        let need_linesplit = self.config.need_linesplit.swap(true, Ordering::Relaxed);
-        if need_linesplit {
+        let first = self.config.first.swap(false, Ordering::Relaxed);
+        if !first {
             println!();
         }
         println!("{}", self.path());
@@ -68,30 +70,38 @@ impl<'a> Harness<'a> {
         format!("{:width$}  ", self.path())
     }
 
-    pub fn collect(&self, stdout: &[u8], stderr: &[u8]) {
-        let any_output = !stdout.is_empty() || !stderr.is_empty();
-
-        let need_linesplit = self
-            .config
-            .need_linesplit
-            .swap(any_output, Ordering::Relaxed);
-        if need_linesplit || any_output {
-            println!();
+    pub fn collect(&self, output: &Output) {
+        let has_output = !output.stdout.is_empty() || !output.stderr.is_empty();
+        let show_result = self.config.result.print(output.status.success());
+        if !has_output && !show_result {
+            return;
         }
-        if let Some(last) = stdout.last() {
-            if !self.config.no_header {
-                println!("{}  Stdout:", self.path());
+        let has_any_harness =
+            !self.config.no_header || !matches!(self.config.result, CommandResult::Never);
+        if has_any_harness {
+            let first = self.config.first.swap(false, Ordering::Relaxed);
+            let need_linesplit = self
+                .config
+                .need_linesplit
+                .swap(has_output, Ordering::Relaxed);
+            if need_linesplit || (has_output && !first) {
+                println!();
             }
-            std::io::stdout().write_all(stdout).unwrap();
+        }
+        if let Some(last) = output.stdout.last() {
+            if !self.config.no_header {
+                println!("{}  stdout:", self.path());
+            }
+            std::io::stdout().write_all(&output.stdout).unwrap();
             if *last != b'\n' {
                 std::io::stdout().write_all(b"\n").unwrap();
             }
         }
-        if let Some(last) = stderr.last() {
+        if let Some(last) = output.stderr.last() {
             if !self.config.no_header {
-                eprintln!("{}  Stderr:", self.path());
+                eprintln!("{}  stderr:", self.path());
             }
-            std::io::stderr().write_all(stderr).unwrap();
+            std::io::stderr().write_all(&output.stderr).unwrap();
             if *last != b'\n' {
                 std::io::stderr().write_all(b"\n").unwrap();
             }
