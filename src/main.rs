@@ -10,8 +10,10 @@ mod byte_lines;
 mod check_dir_is_project;
 mod cli;
 mod command;
-mod display;
+mod harness;
+mod path_style;
 mod shortened_path;
+mod took;
 mod walk;
 
 fn main() {
@@ -27,7 +29,7 @@ fn main() {
         matches.recursive,
     );
 
-    let path_style = display::PathStyle::new(matches.path_style, matches.base_dir);
+    let path_style = path_style::PathStyle::new(matches.path_style, matches.base_dir);
 
     if matches.command.is_empty() {
         for path in rx {
@@ -38,7 +40,7 @@ fn main() {
             }
         }
     } else {
-        let harness = display::HarnessConfig::new(
+        let harness = harness::Config::new(
             path_style,
             threads,
             matches.line_prefix_width,
