@@ -1,10 +1,10 @@
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
-use cli::CommandOutput;
 use crossbeam_channel::Receiver;
 
 use crate::check_dir_is_project::Pattern;
+use crate::cli::CommandOutput;
 
 mod byte_lines;
 mod check_dir_is_project;
