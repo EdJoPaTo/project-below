@@ -139,17 +139,6 @@ pub struct Cli {
     #[allow(clippy::option_option)]
     threads: Option<Option<NonZeroUsize>>,
 
-    /// Shortcut for `--no-header --output=line-prefix`.
-    #[arg(
-        long,
-        short,
-        conflicts_with_all = ["no_header", "output"],
-        group = "command-output-shortcut",
-        requires = "command",
-        help_heading = "Command Option Shortcuts"
-    )]
-    line_prefix: bool,
-
     /// Shortcut for `--no-header --result=never`.
     #[arg(
         long,
@@ -246,10 +235,6 @@ impl Cli {
         if matches.relative {
             eprintln!("project-below Hint: --relative is replaced by --path-style=working-dir and will be removed in the next major release");
             matches.path_style = PathStyle::WorkingDir;
-        }
-        if matches.line_prefix {
-            matches.no_header = true;
-            matches.output = CommandOutput::LinePrefix;
         }
         if matches.no_harness {
             matches.no_header = true;

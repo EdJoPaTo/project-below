@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `--no-header`
   - `--output` with `inherit`, `line-prefix`, `collect` and `null`
   - `--result` with `always`, `never` and `non-zero`
-  - `--line-prefix` as a shortcut for `--no-header --output=line-prefix`
   - `--only-result` as a shortcut for `--no-header --output=null`
   - `--quiet` as a shortcut for `--no-header --output=null --result=never`
 
