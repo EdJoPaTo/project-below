@@ -2,7 +2,7 @@ use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::thread;
 
-use crossbeam_channel::{bounded, Receiver};
+use crossbeam_channel::{unbounded, Receiver};
 use ignore::WalkBuilder;
 
 use crate::check_dir_is_project::{check_dir_is_project, Pattern};
@@ -13,8 +13,7 @@ pub fn walk(
     include_hidden: bool,
     recursive: bool,
 ) -> Receiver<PathBuf> {
-    let threads = default_num_threads().get();
-    let (tx, rx) = bounded(threads * 2);
+    let (tx, rx) = unbounded();
     let walk = WalkBuilder::new(base_dir)
         .hidden(!include_hidden)
         .filter_entry(|dir_entry| {
@@ -22,7 +21,7 @@ pub fn walk(
                 .file_type()
                 .map_or(false, |file_type| file_type.is_dir())
         })
-        .threads(threads)
+        .threads(default_num_threads().get())
         .build_parallel();
     spawn("walker".to_owned(), move || {
         walk.run(|| {
