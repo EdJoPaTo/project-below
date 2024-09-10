@@ -80,7 +80,7 @@ where
     F: Fn(PathBuf) + Send + Sync + 'scope,
 {
     std::thread::scope(|scope| {
-        for _ in 0..threads.get() {
+        for _ in 1..threads.get() {
             let rx = rx.clone();
             std::thread::Builder::new()
                 .name("commandpool".to_owned())
@@ -90,6 +90,9 @@ where
                     }
                 })
                 .expect("failed to spawn thread");
+        }
+        for path in rx {
+            func(path);
         }
     });
 }
