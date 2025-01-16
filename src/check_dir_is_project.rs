@@ -170,7 +170,7 @@ impl Pattern {
                     return false;
                 }
                 path.file_name()
-                    .map_or(false, |name| self.target.is_match(name))
+                    .is_some_and(|name| self.target.is_match(name))
             }
             Position::Below { .. } => false,
         }

@@ -19,7 +19,7 @@ pub fn walk(
         .filter_entry(|dir_entry| {
             dir_entry
                 .file_type()
-                .map_or(false, |file_type| file_type.is_dir())
+                .is_some_and(|file_type| file_type.is_dir())
         })
         .threads(default_num_threads().get())
         .build_parallel();
