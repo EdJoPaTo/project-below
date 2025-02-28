@@ -227,13 +227,17 @@ impl Cli {
     pub fn get() -> Self {
         let mut matches = Self::parse();
         if matches.list {
-            eprintln!("project-below Hint: --list is no longer required and will be removed in the next major release");
+            eprintln!(
+                "project-below Hint: --list is no longer required and will be removed in the next major release"
+            );
         }
         if matches.canonical {
             matches.path_style = PathStyle::Canonical;
         }
         if matches.relative {
-            eprintln!("project-below Hint: --relative is replaced by --path-style=working-dir and will be removed in the next major release");
+            eprintln!(
+                "project-below Hint: --relative is replaced by --path-style=working-dir and will be removed in the next major release"
+            );
             matches.path_style = PathStyle::WorkingDir;
         }
         if matches.no_harness {
