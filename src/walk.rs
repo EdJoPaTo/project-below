@@ -31,7 +31,7 @@ pub fn walk(
                 match entry {
                     Ok(dir_entry) => {
                         if let Some(err) = dir_entry.error() {
-                            eprintln!("Warning for path {:?}: {err}", dir_entry.path());
+                            eprintln!("Warning for path {}: {err}", dir_entry.path().display());
                         }
                         if dir_entry.depth() == 0 {
                             return ignore::WalkState::Continue;
