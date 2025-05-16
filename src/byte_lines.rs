@@ -1,7 +1,7 @@
-use std::io::{Bytes, Read};
+use std::io::{BufReader, Bytes, Read};
 
 #[must_use = "iterators are lazy and do nothing unless consumed"]
-pub struct ByteLines<R>(Bytes<R>);
+pub struct ByteLines<R>(Bytes<BufReader<R>>);
 impl<R: Read> Iterator for ByteLines<R> {
     type Item = Vec<u8>;
 
@@ -29,6 +29,6 @@ pub trait ReadByteLines<R> {
 
 impl<R: Read> ReadByteLines<R> for R {
     fn byte_lines(self) -> ByteLines<R> {
-        ByteLines(self.bytes())
+        ByteLines(BufReader::new(self).bytes())
     }
 }
