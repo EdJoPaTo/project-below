@@ -1,11 +1,11 @@
 use std::ffi::OsString;
-use std::io::Write;
+use std::io::Write as _;
 use std::path::Path;
 use std::process::{Command as OsCommand, ExitStatus, Output, Stdio};
 use std::thread::Scope;
 use std::time::{Duration, Instant};
 
-use crate::byte_lines::ReadByteLines;
+use crate::byte_lines::ReadByteLines as _;
 
 pub struct Command(OsCommand);
 

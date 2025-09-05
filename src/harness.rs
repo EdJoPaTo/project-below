@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::io::Write as _;
 use std::num::NonZeroUsize;
 use std::path::Path;
 use std::process::{ExitStatus, Output};

@@ -266,6 +266,6 @@ impl Cli {
 
 #[test]
 fn verify() {
-    use clap::CommandFactory;
+    use clap::CommandFactory as _;
     Cli::command().debug_assert();
 }
