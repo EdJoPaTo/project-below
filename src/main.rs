@@ -1,3 +1,4 @@
+use std::env::VarError;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 
@@ -19,7 +20,7 @@ mod walk;
 fn main() {
     let matches = cli::Cli::get();
 
-    let threads = matches.threads();
+    let (concurrent_commands, jobs_per_command) = matches.concurrency();
     let patterns = Pattern::many(matches.directory, matches.file);
 
     let rx = walk::walk(
@@ -42,13 +43,27 @@ fn main() {
     } else {
         let harness = harness::Config::new(
             path_style,
-            threads,
+            concurrent_commands,
             matches.line_prefix_width,
             matches.no_header,
             matches.result,
         );
-        commandpool(threads, &rx, |path| {
-            let command = command::Command::new(&matches.command, &path);
+
+        let mut commandenvs = Vec::new();
+        if let Some(jobs) = jobs_per_command {
+            commandenvs.push(("CARGO_BUILD_JOBS", jobs.to_string()));
+
+            let key = "MAKEFLAGS";
+            let value = match std::env::var(key) {
+                Ok(makeflags) => format!("{makeflags} -j{jobs}"),
+                Err(VarError::NotPresent) => format!("-j{jobs}"),
+                Err(VarError::NotUnicode(_)) => panic!("MAKEFLAGS are not valid unicode"),
+            };
+            commandenvs.push((key, value));
+        }
+
+        commandpool(concurrent_commands, &rx, |path| {
+            let command = command::Command::new(&matches.command, &path, &commandenvs);
             let harness = harness.create(&path);
             match matches.output {
                 CommandOutput::Inherit => {

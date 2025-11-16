@@ -10,9 +10,12 @@ use crate::byte_lines::ReadByteLines as _;
 pub struct Command(OsCommand);
 
 impl Command {
-    pub fn new(raw: &[OsString], working_dir: &Path) -> Self {
+    pub fn new(raw: &[OsString], working_dir: &Path, envs: &[(&str, String)]) -> Self {
         let mut command = OsCommand::new(&raw[0]);
         command.args(&raw[1..]).current_dir(working_dir);
+        for (key, value) in envs {
+            command.env(key, value);
+        }
         Self(command)
     }
 

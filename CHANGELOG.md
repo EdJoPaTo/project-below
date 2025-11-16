@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Spawn multiple commands in parallel with `--threads`.
+- Spawn multiple commands concurrently with `--jobs`. `--jobs-per-command` helps with distributing the available jobs across the commands.
 - Add `--path-style` with `base-dir` (default), `canonical`, `dirname`, `short` and `working-dir`. Replacement for `--canonical` and `--relative`.
 - Add options for command output handling:
   - `--no-header`

@@ -123,21 +123,40 @@ pub struct Cli {
     )]
     pub result: CommandResult,
 
-    /// Execute multiple commands in parallel.
+    /// Execute multiple commands concurrently.
     ///
-    /// A specific number of threads can be passed. Defaults to the available CPU cores.
+    /// A specific number of jobs can be passed. Defaults to the available CPU cores.
     ///
-    /// When this argument is not given commands are executed sequentially.
-    /// Running multiple commands in parallel might not always be useful when they act on the same resource.
+    /// When this argument is not given, commands are executed sequentially.
+    /// Running multiple commands concurrently might not always be useful when they act on the same resource.
     /// For example `cargo fetch` uses the same cache where each process waits for the lock.
     #[arg(
         long,
         short = 'j',
+        alias = "threads",
         requires = "command",
         help_heading = "Command Options"
     )]
     #[allow(clippy::option_option)]
-    threads: Option<Option<NonZeroUsize>>,
+    jobs: Option<Option<NonZeroUsize>>,
+
+    /// Assume n jobs per command.
+    ///
+    /// A specific number of jobs can be passed.
+    /// Defaults to the rounded down square root of `--jobs`.
+    /// When this argument is not given 1 job per command is assumed.
+    ///
+    /// This will set multiple environment variables to the commands in order to signal the amount of usable jobs.
+    /// Environment variables used: `CARGO_BUILD_JOBS`, `MAKEFLAGS`.
+    /// If your command is not supported supply them manually (or open an issue/pull-request).
+    ///
+    /// Example: Assuming both `--jobs` and `--jobs-per-command` use their defaults then this is used:
+    /// For example a CPU with 4 threads will use 2 commands concurrently with 2 jobs each.
+    /// A CPU with 16 threads will use 4 commands concurrently with 4 jobs each.
+    /// A CPU with 32 threads will will use sqrt(32) = ~5.65 → 5 jobs per command and 32/5 = 6.4 → 6 commands concurrently.
+    #[arg(long, short = 'J', requires = "jobs", help_heading = "Command Options")]
+    #[allow(clippy::option_option)]
+    jobs_per_command: Option<Option<NonZeroUsize>>,
 
     /// Shortcut for `--no-header --result=never`.
     #[arg(
@@ -257,10 +276,20 @@ impl Cli {
     }
 
     #[must_use]
-    pub fn threads(&self) -> NonZeroUsize {
-        self.threads
+    #[allow(clippy::missing_panics_doc)]
+    pub fn concurrency(&self) -> (NonZeroUsize, Option<NonZeroUsize>) {
+        let total = self
+            .jobs
             .and_then(|wanted| wanted.or_else(|| std::thread::available_parallelism().ok()))
-            .unwrap_or(NonZeroUsize::MIN)
+            .unwrap_or(NonZeroUsize::MIN);
+        self.jobs_per_command.map_or((total, None), |per_command| {
+            let per_command = per_command.unwrap_or_else(|| total.isqrt());
+            let concurrent = NonZeroUsize::new(total.get().div_ceil(per_command.get()))
+                .expect("div_ceil with non zero numbers is always at least 1");
+            debug_assert!(per_command <= total);
+            debug_assert!(concurrent <= total);
+            (concurrent, Some(per_command))
+        })
     }
 }
 
