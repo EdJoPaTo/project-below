@@ -14,15 +14,10 @@ impl<R: Read> Iterator for ByteLines<R> {
             }
             line.push(byte);
         }
-        if line.is_empty() {
-            None
-        } else {
-            Some(line)
-        }
+        if line.is_empty() { None } else { Some(line) }
     }
 }
 
-#[allow(clippy::module_name_repetitions)]
 pub trait ReadByteLines<R> {
     fn byte_lines(self) -> ByteLines<R>;
 }

@@ -2,10 +2,10 @@ use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::thread;
 
-use crossbeam_channel::{unbounded, Receiver};
+use crossbeam_channel::{Receiver, unbounded};
 use ignore::WalkBuilder;
 
-use crate::check_dir_is_project::{check_dir_is_project, Pattern};
+use crate::check_dir_is_project::{Pattern, check_dir_is_project};
 
 pub fn walk(
     base_dir: &Path,

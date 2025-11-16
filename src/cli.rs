@@ -6,7 +6,7 @@ use clap::{Parser, ValueEnum, ValueHint};
 
 #[derive(Debug, Parser)]
 #[command(about, version)]
-#[allow(clippy::partial_pub_fields, clippy::struct_excessive_bools)]
+#[expect(clippy::partial_pub_fields, clippy::struct_excessive_bools)]
 pub struct Cli {
     /// Base directory from where the search starts
     #[arg(
@@ -137,7 +137,7 @@ pub struct Cli {
         requires = "command",
         help_heading = "Command Options"
     )]
-    #[allow(clippy::option_option)]
+    #[expect(clippy::option_option)]
     jobs: Option<Option<NonZeroUsize>>,
 
     /// Assume n jobs per command.
@@ -155,7 +155,7 @@ pub struct Cli {
     /// A CPU with 16 threads will use 4 commands concurrently with 4 jobs each.
     /// A CPU with 32 threads will will use sqrt(32) = ~5.65 → 5 jobs per command and 32/5 = 6.4 → 6 commands concurrently.
     #[arg(long, short = 'J', requires = "jobs", help_heading = "Command Options")]
-    #[allow(clippy::option_option)]
+    #[expect(clippy::option_option)]
     jobs_per_command: Option<Option<NonZeroUsize>>,
 
     /// Shortcut for `--no-header --result=never`.

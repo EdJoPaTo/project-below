@@ -5,8 +5,8 @@ version = "1.2.0"
 license = "MIT"
 repository = "https://github.com/EdJoPaTo/project-below"
 authors = ["EdJoPaTo <project-below-rust@edjopato.de>"]
-edition = "2021"
-rust-version = "1.84"
+edition = "2024"
+rust-version = "1.85"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lints.rust]

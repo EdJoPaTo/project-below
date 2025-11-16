@@ -31,7 +31,7 @@ fn shortest_segment(path: &Path) -> Option<&str> {
     Some(shortest_unique(itself, siblings))
 }
 
-#[allow(clippy::filetype_is_file)] // links might be relevant
+#[expect(clippy::filetype_is_file)] // links might be relevant
 fn non_file_siblings(path: &Path) -> Option<Vec<OsString>> {
     let itself = path.file_name()?;
     let siblings = parent_readdir(path)?
@@ -55,7 +55,7 @@ fn parent_readdir(path: &Path) -> Option<ReadDir> {
 fn shortest_unique<'i>(itself: &'i str, mut others: Vec<&str>) -> &'i str {
     others.retain(|other| !other.starts_with(itself));
     for (index, _) in itself.char_indices().skip(1) {
-        #[allow(clippy::string_slice)] // Index from char_indices
+        #[expect(clippy::string_slice)] // Index from char_indices
         let part = &itself[..index];
         if !part.chars().last().unwrap().is_alphanumeric() {
             continue;
